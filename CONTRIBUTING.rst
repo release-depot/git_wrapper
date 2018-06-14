@@ -80,7 +80,7 @@ Ready to contribute? Here's how to set up `git_wrapper` for local development.
    tests, including testing other Python versions with tox::
 
     $ make lint
-    $ make tests
+    $ make test
     $ tox
 
 
