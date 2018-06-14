@@ -64,9 +64,10 @@ Ready to contribute? Here's how to set up `git_wrapper` for local development.
 
     $ git clone git@github.com:your_name_here/git_wrapper.git
 
-3. Use pipenv to setup a new virtualenv. Pipenv will create a new virtualenv with packages at the correct versions. Assuming you have pipenv installed, this is how you set up your fork for local development::
+3. Use pipenv via the Makefile to setup a new virtualenv. Pipenv will create a new virtualenv with packages at the correct versions.
+   Assuming you have pipenv installed, this is how you set up your fork for local development::
 
-    $ pipenv install --dev --ignore-pipfile
+    $ make dev
     $ pipenv shell
 
 4. Create a branch for local development::
@@ -78,8 +79,8 @@ Ready to contribute? Here's how to set up `git_wrapper` for local development.
 5. When you're done making changes, check that your changes pass flake8 and the
    tests, including testing other Python versions with tox::
 
-    $ flake8 git_wrapper tests
-    $ py.test tests
+    $ make lint
+    $ make tests
     $ tox
 
 
@@ -110,17 +111,3 @@ Tips
 To run a subset of tests::
 
 $ py.test tests.test_git_wrapper
-
-
-Deploying
----------
-
-A reminder for the maintainers on how to deploy.
-Make sure all your changes are committed (including an entry in HISTORY.rst).
-Then run::
-
-$ bumpversion patch # possible: major / minor / patch
-$ git push
-$ git push --tags
-
-Travis will then deploy to PyPI if tests pass.
