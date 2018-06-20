@@ -21,15 +21,6 @@ def remote_generator(names):
     return ret_data
 
 
-@pytest.fixture
-def mock_repo():
-    """repo mock fixture"""
-    repo_mock = Mock()
-    repo_git_mock = Mock()
-    repo_mock.attach_mock(repo_git_mock, 'git')
-    return repo_mock
-
-
 def test_repo(mock_repo):
     """
     GIVEN GitUtilBase initialized with a path and no repo object
