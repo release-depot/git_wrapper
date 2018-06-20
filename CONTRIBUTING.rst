@@ -110,4 +110,4 @@ Tips
 
 To run a subset of tests::
 
-$ py.test tests.test_git_wrapper
+$ py.test tests/test_base.py
