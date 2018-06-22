@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 """Tests for GitWrapperBase"""
 
-from unittest.mock import Mock, patch
+from mock import Mock, patch
 
 import pytest
 
