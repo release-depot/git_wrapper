@@ -153,3 +153,74 @@ def test_add_remote_update_fails(mock_repo):
     assert git_util.add_remote('rdo', 'http://rdoproject.org') is False
     assert update_mock.called is True
     delete_mock.assert_called_once_with(remote_mock)
+
+
+def test_find_branch_local(mock_repo_with_branches):
+    """
+    GIVEN GitWrapperBase initialized with a path and repo
+    WHEN _find_branch is called with a branch name
+    THEN a branch is returned
+    """
+    git_util = GitWrapperBase('./', mock_repo_with_branches)
+
+    assert git_util._find_branch('branchB') == git_util.repo.branches['branchB']
+
+
+def test_find_branch_remote(mock_repo_with_branches):
+    """
+    GIVEN GitWrapperBase initialized with a path and repo
+    WHEN _find_branch is called with a branch name
+    AND the branch name contains a slash
+    THEN a branch is returned
+    """
+    git_util = GitWrapperBase('./', mock_repo_with_branches)
+
+    expected = git_util.repo.remotes['remoteA'].refs['branchC']
+    assert git_util._find_branch('remoteA/branchC') == expected
+
+
+def test_find_branch_remote_multiple_slashes(mock_repo_with_branches):
+    """
+    GIVEN GitWrapperBase initialized with a path and repo
+    WHEN _find_branch is called with a branch name
+    AND the branch name contains multiple slashes
+    THEN a branch is returned
+    """
+    git_util = GitWrapperBase('./', mock_repo_with_branches)
+
+    expected = git_util.repo.remotes['remoteA'].refs['test/branch-with-slashes']
+    assert git_util._find_branch('remoteA/test/branch-with-slashes') == expected
+
+
+def test_find_branch_called_with_none(mock_repo_with_branches):
+    """
+    GIVEN GitWrapperBase initialized with a path and repo
+    WHEN _find_branch is called with no branch name
+    THEN None is returned
+    """
+    git_util = GitWrapperBase('./', mock_repo_with_branches)
+
+    assert git_util._find_branch(None) is None
+
+
+def test_find_branch_not_found(mock_repo_with_branches):
+    """
+    GIVEN GitWrapperBase initialized with a path and repo
+    WHEN _find_branch is called with a bad branch name
+    THEN None is returned
+    """
+    git_util = GitWrapperBase('./', mock_repo_with_branches)
+
+    assert git_util._find_branch('doesNotExist') is None
+
+
+def test_find_branch_remote_not_found(mock_repo_with_branches):
+    """
+    GIVEN GitWrapperBase initialized with a path and repo
+    WHEN _find_branch is called with a bad branch name
+    AND the branch name contains a slash
+    THEN None is returned
+    """
+    git_util = GitWrapperBase('./', mock_repo_with_branches)
+
+    assert git_util._find_branch('this/doesNotExist') is None
