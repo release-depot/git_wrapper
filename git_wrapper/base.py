@@ -80,3 +80,21 @@ class GitWrapperBase(object):
             self.repo.delete_remote(remote)
 
         return ret_status
+
+    def _find_branch(self, branch_name):
+        """Find and return a local or remote branch
+           :param str branch_name: The name of the branch to search for
+           :return A git.Head for a local branch, git.remoteReference if remote branch, None if not found
+        """
+        if not branch_name:
+            return None
+
+        if branch_name in self.repo.branches:
+            return self.repo.branches[branch_name]
+        elif '/' in branch_name:  # May contain a remote reference
+            remote, branch_name = branch_name.split('/', 1)
+            try:
+                return self.repo.remotes[remote].refs[branch_name]
+            except (IndexError, KeyError):
+                return None
+        return None
