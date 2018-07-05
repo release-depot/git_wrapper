@@ -6,3 +6,11 @@ History
 ------------------
 
 * First release on PyPI.
+
+0.1.0 (2018-07-05)
+------------------
+
+* Second release on PyPI.
+* Base functionality
+* git cherry support
+* Removing pipenv support.
