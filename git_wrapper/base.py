@@ -1,11 +1,11 @@
 #! /usr/bin/env python
-'''This module acts as an interface for common git tasks'''
+"""This module acts as an interface for common git tasks"""
 
 import git
 
 
 class GitWrapperBase(object):
-    '''Provides a wrapper to interact with a git repository'''
+    """Provides a wrapper to interact with a git repository"""
 
     def __init__(self, path='', repo=None):
         """Constructor for GitUtilBase object
