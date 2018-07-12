@@ -10,13 +10,13 @@ class GitWrapperBase(object):
     def __init__(self, path='', repo=None):
         """Constructor for GitUtilBase object
             :param str path: Path to a git repo Default('')
-            :param git.Repo repo: An already construnted git.Repo object to use Default(None)
+            :param git.Repo repo: An already constructed git.Repo object to use Default(None)
         """
         self.__repo = None  # Added to clear pylint warnings
         self.__setup(path, repo)
 
     def __setup(self, path, repo):
-        """Sets the path and repo after perfroming validation
+        """Sets the path and repo after performing validation
             :param str path: Path to a directory containing a git repository
             :param git.Repo repo: An already constructed git.Repo object to use
         """
@@ -37,7 +37,7 @@ class GitWrapperBase(object):
     @repo.setter
     def repo(self, new_repo):
         """Allows for use of an already constructed repo
-            :param git.Repo new_repo: An already construnted git.Repo object to use
+            :param git.Repo new_repo: An already constructed git.Repo object to use
         """
         self.__repo = new_repo
 
