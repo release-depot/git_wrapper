@@ -32,7 +32,7 @@ Notes
 -----
 
 This library only supports python 3. Some features may still work with python 2.7 but not all of the
-syntax and features my be compatible.
+syntax and features may be compatible.
 
 Development
 -----------
