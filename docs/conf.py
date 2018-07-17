@@ -26,6 +26,22 @@ import git_wrapper
 
 # -- General configuration ---------------------------------------------
 
+# The following is from http://ggeditor.readthedocs.io/en/latest/ApiDoc.html
+def run_apidoc(_):
+    from sphinx.apidoc import main
+    parentFolder = os.path.join(os.path.dirname(__file__), '..')
+    cur_dir = os.path.abspath(os.path.dirname(__file__))
+    sys.path.append(parentFolder)
+    module = os.path.join(parentFolder, 'git_wrapper')
+    output_path = os.path.join(cur_dir, 'source')
+    main(['-e', '-f', '-o', output_path, module])
+
+
+def setup(app):
+    # trigger the run_apidoc
+    app.connect('builder-inited', run_apidoc)
+
+
 # If your documentation needs a minimal Sphinx version, state it here.
 #
 # needs_sphinx = '1.0'
@@ -84,7 +100,7 @@ todo_include_todos = False
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = 'alabaster'
+html_theme = 'sphinx_rtd_theme'
 
 # Theme options are theme-specific and customize the look and feel of a
 # theme further.  For a list of options available for each theme, see the

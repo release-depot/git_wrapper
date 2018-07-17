@@ -3,7 +3,7 @@
 
 # You can set these variables from the command line.
 SPHINXOPTS    =
-SPHINXBUILD   = pipenv run python -msphinx
+SPHINXBUILD   = sphinx-build
 SPHINXPROJ    = git_wrapper
 SOURCEDIR     = .
 BUILDDIR      = _build
