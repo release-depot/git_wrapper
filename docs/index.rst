@@ -1,5 +1,5 @@
 Welcome to git_wrapper's documentation!
-======================================
+=======================================
 
 .. toctree::
    :maxdepth: 2
@@ -8,7 +8,7 @@ Welcome to git_wrapper's documentation!
    readme
    installation
    usage
-   modules
+   source/modules
    contributing
    authors
    history
