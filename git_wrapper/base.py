@@ -9,6 +9,7 @@ class GitWrapperBase(object):
 
     def __init__(self, path='', repo=None):
         """Constructor for GitUtilBase object
+
             :param str path: Path to a git repo Default('')
             :param git.Repo repo: An already constructed git.Repo object to use Default(None)
         """
@@ -17,6 +18,7 @@ class GitWrapperBase(object):
 
     def __setup(self, path, repo):
         """Sets the path and repo after performing validation
+
             :param str path: Path to a directory containing a git repository
             :param git.Repo repo: An already constructed git.Repo object to use
         """
@@ -30,32 +32,36 @@ class GitWrapperBase(object):
     @property
     def repo(self):
         """Returns the git repo for a given path
-            :return A reference to the internal git.Repo object
+
+            :return git.Repo: A reference to the internal git.Repo object
         """
         return self.__repo
 
     @repo.setter
     def repo(self, new_repo):
         """Allows for use of an already constructed repo
+
             :param git.Repo new_repo: An already constructed git.Repo object to use
         """
         self.__repo = new_repo
 
     @property
     def git(self):
-        '''Returns the git command for a given repo'''
+        """Returns the git command for a given repo"""
         return self.repo.git
 
     def remote_names(self):
         """Returns a list of remotes for a given repo
-            :return A list of utf-8 encoded remote names
+
+            :return list: A list of utf-8 encoded remote names
         """
         return [x.name for x in self.repo.remotes]
 
     def describe(self, sha):
         """Return tag and commit info for a given sha
-            :param str sha: The SHA1 of the commit to describe
-            :return dict with tag and patch data
+
+           :param str sha: The SHA1 of the commit to describe
+           :return dict: A dict with tag and patch data
         """
         ret_data = {'tag': '', 'patch': ''}
         output = self.git.describe(sha).split('-g')
@@ -67,6 +73,7 @@ class GitWrapperBase(object):
 
     def add_remote(self, name, url):
         """Adds a remote to the given repo
+
             :param str name: The name for the remote
             :param str url: The url to use for the remote
             :return bool: True if the remote was add, False otherwise

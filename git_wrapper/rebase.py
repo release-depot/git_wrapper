@@ -1,4 +1,5 @@
 #! /usr/bin/env python
+"""This module acts as an interface for common git tasks"""
 
 import logging
 
@@ -19,6 +20,7 @@ class GitWrapperRebase(GitWrapperBase):
 
     def to_hash(self, branch_name, hash_):
         """Perform a rebase from a specific reference to another.
+
            :param str branch_name: The name of the branch or reference to start from
            :param str hash_: The commit hash or reference to rebase to
         """
