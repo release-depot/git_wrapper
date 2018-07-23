@@ -11,7 +11,7 @@ from git_wrapper.base import GitWrapperBase
 
 
 def remote_generator(names):
-    '''Generates objects to be used with git.Repo.remotes call'''
+    """Generates objects to be used with git.Repo.remotes call"""
     ret_data = []
     for name in names:
         obj = type('', (), {})()
