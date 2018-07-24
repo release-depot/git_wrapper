@@ -1,7 +1,12 @@
 #! /usr/bin/env python
 """This module acts as an interface for common git tasks"""
 
+import logging
+
 import git
+
+
+logger = logging.getLogger(__name__)
 
 
 class GitWrapperBase(object):
@@ -76,14 +81,16 @@ class GitWrapperBase(object):
 
             :param str name: The name for the remote
             :param str url: The url to use for the remote
-            :return bool: True if the remote was add, False otherwise
+            :return bool: True if the remote was added, False otherwise
         """
+        logger.debug("Adding remote %s (%s) to repo %s", name, url, self.repo.working_dir)
         remote = self.repo.create_remote(name, url)
         ret_status = False
         try:
             remote.update()
             ret_status = True
-        except git.CommandError:
+        except git.CommandError as ex:
+            logger.debug("Failed to update new remote %s (%s), removing it. Error: %s", name, url, ex)
             self.repo.delete_remote(remote)
 
         return ret_status
