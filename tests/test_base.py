@@ -8,6 +8,7 @@ import pytest
 from git import CommandError
 
 from git_wrapper.base import GitWrapperBase
+from git_wrapper import exceptions
 
 
 def remote_generator(names):
@@ -115,6 +116,35 @@ def test_describe_empty(mock_repo):
     assert expected == git_util.describe('12345')
 
 
+def test_describe_sha_doesnt_exist(mock_repo):
+    """
+    GIVEN GitWrapperBase initialized with a path and repo
+    WHEN describe is called with a non-existent hash
+    THEN a ReferenceNotFoundException is raised
+    """
+    git_util = GitWrapperBase('./', mock_repo)
+    git_util.git.describe.side_effect = CommandError('describe')
+
+    with pytest.raises(exceptions.DescribeException):
+        git_util.describe('12345')
+
+
+def test_describe_with_lightweight_tags(mock_repo):
+    """
+    GIVEN GitWrapperBase initialized with a path and repo
+    WHEN describe is called with a good hash for a lightweight tag
+    THEN a dictionary with a tag and empty patch is returned
+    AND the tag/ prefix is stripped from the tag
+    """
+    expected = {'tag': '1.0.0-lw', 'patch': ''}
+    attrs = {'describe.return_value': 'tag/1.0.0-lw'}
+    mock_repo.git.configure_mock(**attrs)
+
+    git_util = GitWrapperBase('./', mock_repo)
+
+    assert expected == git_util.describe('12345')
+
+
 def test_add_remote_adds(mock_repo):
     """
     GIVEN GitWrapperBase initialized with a path and repo
@@ -132,13 +162,26 @@ def test_add_remote_adds(mock_repo):
     assert update_mock.called is True
 
 
+def test_add_remote_adds_fails(mock_repo):
+    """
+    GIVEN GitWrapperBase initialized with a path and repo
+    WHEN add_remote is called with a name and url
+    AND the remote create fails with an exception
+    THEN a False status is returned
+    """
+    mock_repo.create_remote.side_effect = CommandError('create')
+    git_util = GitWrapperBase('./', mock_repo)
+
+    assert git_util.add_remote('rdo', 'http://rdoproject.org') is False
+
+
 def test_add_remote_update_fails(mock_repo):
     """
     GIVEN GitWrapperBase initialized with a path and repo
     WHEN add_remote is called with a name and url
     AND the remote update fails with an exception
     THEN a False status is returned
-    with delete_remote called
+    WITH delete_remote called
     """
     remote_mock = Mock()
     delete_mock = Mock()
