@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 
-from unittest.mock import patch
+from mock import patch
 
 import git
 import pytest
