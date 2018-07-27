@@ -1,0 +1,11 @@
+[run]
+branch = True
+source = git_wrapper
+omit =
+ tests/*
+
+[paths]
+source = git_wrapper
+
+[report]
+ignore_errors = True
