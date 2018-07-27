@@ -1,0 +1,4 @@
+coverage
+pytest
+mock>=2.0.0
+flake8
