@@ -1,5 +1,5 @@
-coverage
 pytest
+pytest-cov
 pytest-runner
 mock>=2.0.0
 flake8
