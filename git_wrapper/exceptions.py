@@ -21,3 +21,8 @@ class RebaseException(Exception):
 class AbortException(Exception):
     """Error occurred while attempting to abort a command."""
     pass
+
+
+class DescribeException(Exception):
+    """Error occurred while running the describe command."""
+    pass

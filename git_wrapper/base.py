@@ -5,6 +5,8 @@ import logging
 
 import git
 
+from git_wrapper import exceptions
+
 
 logger = logging.getLogger(__name__)
 
@@ -69,9 +71,17 @@ class GitWrapperBase(object):
            :return dict: A dict with tag and patch data
         """
         ret_data = {'tag': '', 'patch': ''}
-        output = self.git.describe(sha).split('-g')
+        try:
+            output = self.git.describe('--all', sha).split('-g')
+        except git.CommandError as ex:
+            raise exceptions.DescribeException("Error while running describe command on sha %s: %s" % (sha, ex)) from ex
+
         if output:
-            ret_data['tag'] = output[0]
+            tag = output[0]
+            # Lightweight tags have a tag/ prefix when returned
+            if tag.startswith('tag/'):
+                tag = tag[4:]
+            ret_data['tag'] = tag
             if len(output) > 1:
                 ret_data['patch'] = output[1]
         return ret_data
@@ -84,8 +94,14 @@ class GitWrapperBase(object):
             :return bool: True if the remote was added, False otherwise
         """
         logger.debug("Adding remote %s (%s) to repo %s", name, url, self.repo.working_dir)
-        remote = self.repo.create_remote(name, url)
         ret_status = False
+
+        try:
+            remote = self.repo.create_remote(name, url)
+        except git.CommandError as ex:
+            logger.debug("Failed to create new remote %s (%s). Error: %s", name, url, ex)
+            return ret_status
+
         try:
             remote.update()
             ret_status = True
