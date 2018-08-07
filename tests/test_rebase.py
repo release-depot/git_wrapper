@@ -35,8 +35,9 @@ def test_rebase_dirty_repo(mock_repo):
     mock_repo.is_dirty.return_value = True
     rebase = GitWrapperRebase('./', mock_repo)
 
-    with pytest.raises(exceptions.DirtyRepositoryException):
-        rebase.to_hash('test', '12345')
+    with patch('git.repo.fun.name_to_object'):
+        with pytest.raises(exceptions.DirtyRepositoryException):
+            rebase.to_hash('test', '12345')
     assert mock_repo.is_dirty.called is True
 
 

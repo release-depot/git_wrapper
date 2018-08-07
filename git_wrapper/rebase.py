@@ -7,6 +7,7 @@ import git
 
 from git_wrapper.base import GitWrapperBase
 from git_wrapper import exceptions
+from git_wrapper.utils.decorators import reference_exists
 
 
 logger = logging.getLogger(__name__)
@@ -15,9 +16,8 @@ logger = logging.getLogger(__name__)
 class GitWrapperRebase(GitWrapperBase):
     """Provides git rebase functionality"""
 
-    def __init__(self, path='', repo=None):
-        super(GitWrapperRebase, self).__init__(path=path, repo=repo)
-
+    @reference_exists("branch_name")
+    @reference_exists("hash_")
     def to_hash(self, branch_name, hash_):
         """Perform a rebase from a specific reference to another.
 
@@ -29,20 +29,6 @@ class GitWrapperRebase(GitWrapperBase):
         if self.repo.is_dirty():
             msg = "Repository %s is dirty. Please clean workspace before proceeding." % self.repo.working_dir
             raise exceptions.DirtyRepositoryException(msg)
-
-        # Does the branch exist?
-        try:
-            git.repo.fun.name_to_object(self.repo, branch_name)
-        except git.exc.BadName as ex:
-            msg = "Could not find branch %s." % branch_name
-            raise exceptions.ReferenceNotFoundException(msg) from ex
-
-        # Does the hash exists?
-        try:
-            git.repo.fun.name_to_object(self.repo, hash_)
-        except git.exc.BadName as ex:
-            msg = "Could not find hash %s." % hash_
-            raise exceptions.ReferenceNotFoundException(msg) from ex
 
         # Checkout
         try:
@@ -65,5 +51,5 @@ class GitWrapperRebase(GitWrapperBase):
         try:
             self.repo.git.rebase('--abort')
         except git.GitCommandError as ex:
-            msg = "Rebase abort command failed. Error: %s" % (ex)
+            msg = "Rebase abort command failed. Error: %s" % ex
             raise exceptions.AbortException(msg) from ex
