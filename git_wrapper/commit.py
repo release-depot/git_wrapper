@@ -2,6 +2,7 @@
 """This module acts as an interface for common git commit tasks"""
 
 import logging
+import os
 
 import git
 
@@ -39,6 +40,32 @@ class GitWrapperCommit(GitWrapperBase):
         commit = self.repo.git.commit(message=message, all=True, signoff=signoff)
         logger.info("Committed changes as commit %s" % commit)
 
+    @reference_exists('branch_name')
+    def apply_patch(self, branch_name, path):
+        """Apply a git patch file on top of the specified branch.
+
+           :param str branch_name: The name of the branch or reference to apply the patch to
+           :param str path: Path to a git-formatted patch file (cf. git format-patch)
+        """
+        # Expand file (also needed for git-am) and check it exists
+        full_path = os.path.expanduser(path)
+        if not os.path.isfile(full_path):
+            raise exceptions.FileDoesntExistException('%s is not a file.' % full_path)
+
+        # Checkout
+        try:
+            self.repo.git.checkout(branch_name)
+        except git.GitCommandError as ex:
+            msg = "Could not checkout branch %s. Error: %s" % (branch_name, ex)
+            raise exceptions.CheckoutException(msg) from ex
+
+        # Apply the patch file
+        try:
+            self.repo.git.am(full_path)
+        except git.GitCommandError as ex:
+            msg = "Could not apply patch %s on branch %s. Error: %s" % (path, branch_name, ex)
+            raise exceptions.ChangeNotAppliedException(msg) from ex
+
     @reference_exists('hash_')
     def revert(self, hash_):
         """Revert a specified commit.
@@ -50,3 +77,11 @@ class GitWrapperCommit(GitWrapperBase):
         except git.GitCommandError as ex:
             msg = "Revert failed for hash %s. Error: %s" % (hash_, ex)
             raise exceptions.RevertException(msg) from ex
+
+    def abort(self):
+        """Abort applying a patch (git am)."""
+        try:
+            self.repo.git.am('--abort')
+        except git.GitCommandError as ex:
+            msg = "Failed to abort git am operation. Error: %s" % ex
+            raise exceptions.AbortException(msg) from ex

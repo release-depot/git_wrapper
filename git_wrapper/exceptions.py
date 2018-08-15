@@ -41,3 +41,13 @@ class DescribeException(GitWrapperException):
 class CommitMessageMissingException(GitWrapperException):
     """Cannot create a commit without a commit message."""
     pass
+
+
+class ChangeNotAppliedException(GitWrapperException):
+    """Error occured while applying a patch or diff onto a repo."""
+    pass
+
+
+class FileDoesntExistException(GitWrapperException):
+    """File doesn't exist."""
+    pass
