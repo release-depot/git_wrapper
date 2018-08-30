@@ -50,7 +50,7 @@ clean-test: ## remove test and coverage artifacts
 	rm -fr htmlcov/
 
 lint: ## check style with flake8
-	pipenv run flake8 --ignore=E501 git_wrapper tests
+	pipenv run flake8 --ignore=E501 git_wrapper tests integration_tests
 
 test: dev ## run tests quickly with the default Python
 	pipenv run py.test tests
