@@ -4,6 +4,7 @@
 import logging
 
 import git
+from future.utils import raise_from
 
 from git_wrapper.base import GitWrapperBase
 from git_wrapper import exceptions
@@ -35,14 +36,14 @@ class GitWrapperRebase(GitWrapperBase):
             self.repo.git.checkout(branch_name)
         except git.GitCommandError as ex:
             msg = "Could not checkout branch %s. Error: %s" % (branch_name, ex)
-            raise exceptions.CheckoutException(msg) from ex
+            raise_from(exceptions.CheckoutException(msg), ex)
 
         # Rebase
         try:
             self.repo.git.rebase(hash_)
         except git.GitCommandError as ex:
             msg = "Could not rebase hash %s onto branch %s. Error: %s" % (hash_, branch_name, ex)
-            raise exceptions.RebaseException(msg) from ex
+            raise_from(exceptions.RebaseException(msg), ex)
 
         logger.debug("Successfully rebased branch %s to %s" % (branch_name, hash_))
 
@@ -52,4 +53,4 @@ class GitWrapperRebase(GitWrapperBase):
             self.repo.git.rebase('--abort')
         except git.GitCommandError as ex:
             msg = "Rebase abort command failed. Error: %s" % ex
-            raise exceptions.AbortException(msg) from ex
+            raise_from(exceptions.AbortException(msg), ex)

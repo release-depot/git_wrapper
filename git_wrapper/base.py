@@ -4,6 +4,7 @@
 import logging
 
 import git
+from future.utils import raise_from
 
 from git_wrapper import exceptions
 
@@ -74,7 +75,7 @@ class GitWrapperBase(object):
         try:
             output = self.git.describe('--all', sha).split('-g')
         except git.CommandError as ex:
-            raise exceptions.DescribeException("Error while running describe command on sha %s: %s" % (sha, ex)) from ex
+            raise_from(exceptions.DescribeException("Error while running describe command on sha %s: %s" % (sha, ex)), ex)
 
         if output:
             tag = output[0]

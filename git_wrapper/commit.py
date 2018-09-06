@@ -5,6 +5,7 @@ import logging
 import os
 
 import git
+from future.utils import raise_from
 
 from git_wrapper.base import GitWrapperBase
 from git_wrapper import exceptions
@@ -61,14 +62,14 @@ class GitWrapperCommit(GitWrapperBase):
             self.repo.git.checkout(branch_name)
         except git.GitCommandError as ex:
             msg = "Could not checkout branch %s. Error: %s" % (branch_name, ex)
-            raise exceptions.CheckoutException(msg) from ex
+            raise_from(exceptions.CheckoutException(msg), ex)
 
         # Apply the patch file
         try:
             self.repo.git.am(full_path)
         except git.GitCommandError as ex:
             msg = "Could not apply patch %s on branch %s. Error: %s" % (path, branch_name, ex)
-            raise exceptions.ChangeNotAppliedException(msg) from ex
+            raise_from(exceptions.ChangeNotAppliedException(msg), ex)
 
     @reference_exists('branch_name')
     def apply_diff(self, branch_name, diff_path, message, signoff=False):
@@ -92,14 +93,14 @@ class GitWrapperCommit(GitWrapperBase):
             self.repo.git.checkout(branch_name)
         except git.GitCommandError as ex:
             msg = "Could not checkout branch %s. Error: %s" % (branch_name, ex)
-            raise exceptions.CheckoutException(msg) from ex
+            raise_from(exceptions.CheckoutException(msg), ex)
 
         # Apply the diff
         try:
             self.repo.git.apply(full_path)
         except git.GitCommandError as ex:
             msg = "Could not apply diff on branch %s. Error: %s" % (branch_name, ex)
-            raise exceptions.ChangeNotAppliedException(msg) from ex
+            raise_from(exceptions.ChangeNotAppliedException(msg), ex)
 
         # Commit
         self.commit(message, signoff)
@@ -114,7 +115,7 @@ class GitWrapperCommit(GitWrapperBase):
             self.repo.git.revert(hash_, no_edit=True)
         except git.GitCommandError as ex:
             msg = "Revert failed for hash %s. Error: %s" % (hash_, ex)
-            raise exceptions.RevertException(msg) from ex
+            raise_from(exceptions.RevertException(msg), ex)
 
     def abort(self):
         """Abort applying a patch (git am)."""
@@ -122,7 +123,7 @@ class GitWrapperCommit(GitWrapperBase):
             self.repo.git.am('--abort')
         except git.GitCommandError as ex:
             msg = "Failed to abort git am operation. Error: %s" % ex
-            raise exceptions.AbortException(msg) from ex
+            raise_from(exceptions.AbortException(msg), ex)
 
     def reverse(self, diff_path):
         """Reverse a diff that was applied to the workspace.
@@ -137,4 +138,4 @@ class GitWrapperCommit(GitWrapperBase):
             self.repo.git.apply(full_path, reverse=True)
         except git.GitCommandError as ex:
             msg = "Reversing diff failed. Error: %s" % ex
-            raise exceptions.RevertException(msg) from ex
+            raise_from(exceptions.RevertException(msg), ex)
