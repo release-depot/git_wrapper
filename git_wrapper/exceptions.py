@@ -44,10 +44,15 @@ class CommitMessageMissingException(GitWrapperException):
 
 
 class ChangeNotAppliedException(GitWrapperException):
-    """Error occured while applying a patch or diff onto a repo."""
+    """Error occurred while applying a patch or diff onto a repo."""
     pass
 
 
 class FileDoesntExistException(GitWrapperException):
     """File doesn't exist."""
+    pass
+
+
+class RepoCreationException(GitWrapperException):
+    """Error occurred while creating or cloning a repo."""
     pass
