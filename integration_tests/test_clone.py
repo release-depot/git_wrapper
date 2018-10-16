@@ -1,3 +1,5 @@
+import os
+
 import pytest
 
 from git_wrapper.clone import GitWrapperClone
@@ -48,3 +50,24 @@ def test_clone_failed(clone_repo_root, clone_repo_url):
     clone = GitWrapperClone()
     with pytest.raises(exceptions.RepoCreationException):
         clone.clone(repo_url, repo_root)
+
+
+def test_destroy_and_reclone(clone_repo_root, clone_repo_url):
+    repo_root = clone_repo_root
+    repo_url = clone_repo_url
+
+    # Start by creating a new repo to destroy
+    clone = GitWrapperClone()
+    clone.clone(repo_url, repo_root)
+
+    # Get a timestamp for a random file
+    f_path = os.path.join(repo_root, 'requirements.txt')
+    orig_timestamp = os.path.getmtime(f_path)
+
+    # Run the reclone action
+    clone = GitWrapperClone(repo_root)
+    clone.destroy_and_reclone()
+
+    # Ensure timestamp changed
+    new_timestamp = os.path.getmtime(f_path)
+    assert new_timestamp != orig_timestamp

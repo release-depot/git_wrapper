@@ -56,3 +56,8 @@ class FileDoesntExistException(GitWrapperException):
 class RepoCreationException(GitWrapperException):
     """Error occurred while creating or cloning a repo."""
     pass
+
+
+class RemoteException(GitWrapperException):
+    """Error occurred while doing an operation on a remote."""
+    pass
