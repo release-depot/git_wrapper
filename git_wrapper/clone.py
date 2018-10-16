@@ -3,6 +3,7 @@
 
 import logging
 import os
+import shutil
 
 import git
 from future.utils import raise_from
@@ -41,3 +42,50 @@ class GitWrapperClone(GitWrapperBase):
 
         self.__init__(repo=repo)
         return repo
+
+    def destroy_and_reclone(self):
+        """Deletes the current directory and reclone the repository."""
+        # Ensure the class was initialised properly
+        if not hasattr(self, "repo") or not self.repo:
+            raise Exception("No repo given")
+
+        # Get local path for the repo
+        local_path = self.repo.working_dir
+
+        logger.info("Preparing to delete and reclone repo {repo}".format(repo=local_path))
+
+        # Get all of the remotes info
+        remotes = {}
+        for r in self.repo.remotes:
+            remotes[r.name] = r.url
+
+        logger.debug("Remotes for {repo}: {remotes}".format(repo=local_path, remotes=' '.join(list(remotes))))
+
+        if len(remotes) == 0:
+            msg = "No remotes found for repo {repo}, cannot reclone. Aborting deletion.".format(repo=local_path)
+            raise exceptions.RepoCreationException(msg)
+
+        # Select a remote for the clone, 'origin' by default
+        if "origin" in remotes.keys():
+            default_remote = "origin"
+        else:
+            default_remote = list(remotes)[0]
+
+        logger.debug("Default remote for cloning set to '{remote}'".format(remote=default_remote))
+
+        # Delete the local repo
+        logger.info("Deleting local repo at {path}".format(path=local_path))
+        shutil.rmtree(local_path, ignore_errors=True)
+
+        # Clone it again
+        self.clone(remotes[default_remote], local_path)
+
+        # Recreate the remotes
+        for name, url in remotes.items():
+            if name != default_remote:
+                try:
+                    logger.debug("Adding remote {remote}".format(remote=name))
+                    r = self.repo.create_remote(name, url)
+                except git.GitCommandError as ex:
+                    msg = "Issue with recreating remote {remote}. Error: {error}".format(remote=name, error=ex)
+                    raise_from(exceptions.RemoteException(msg), ex)

@@ -3,6 +3,7 @@
 
 from mock import Mock
 
+import git
 import pytest
 
 
@@ -12,4 +13,9 @@ def mock_repo():
     repo_mock = Mock()
     repo_git_mock = Mock()
     repo_mock.attach_mock(repo_git_mock, 'git')
+
+    remote = Mock(spec=git.Remote)
+    remote.configure_mock(name="origin", url="http://example.com")
+    repo_mock.remotes = [remote]
+
     return repo_mock
