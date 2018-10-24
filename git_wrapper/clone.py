@@ -32,7 +32,7 @@ class GitWrapperClone(GitWrapperBase):
            :return git.Repo: Returns the newly created repo object
         """
         clone_to = os.path.realpath(os.path.expanduser(clone_to))
-        logger.debug("Preparing to clone repository {repo} into directory {dir}".format(repo=clone_from, dir=clone_to))
+        logger.debug("Preparing to clone repository %s into directory %s", clone_from, clone_to)
 
         try:
             repo = git.repo.base.Repo.clone_from(clone_from, clone_to)
@@ -52,14 +52,14 @@ class GitWrapperClone(GitWrapperBase):
         # Get local path for the repo
         local_path = self.repo.working_dir
 
-        logger.info("Preparing to delete and reclone repo {repo}".format(repo=local_path))
+        logger.info("Preparing to delete and reclone repo %s", local_path)
 
         # Get all of the remotes info
         remotes = {}
         for r in self.repo.remotes:
             remotes[r.name] = r.url
 
-        logger.debug("Remotes for {repo}: {remotes}".format(repo=local_path, remotes=' '.join(list(remotes))))
+        logger.debug("Remotes for %s: %s", local_path, ' '.join(list(remotes)))
 
         if len(remotes) == 0:
             msg = "No remotes found for repo {repo}, cannot reclone. Aborting deletion.".format(repo=local_path)
@@ -71,10 +71,10 @@ class GitWrapperClone(GitWrapperBase):
         else:
             default_remote = list(remotes)[0]
 
-        logger.debug("Default remote for cloning set to '{remote}'".format(remote=default_remote))
+        logger.debug("Default remote for cloning set to '%s'", default_remote)
 
         # Delete the local repo
-        logger.info("Deleting local repo at {path}".format(path=local_path))
+        logger.info("Deleting local repo at %s", local_path)
         shutil.rmtree(local_path, ignore_errors=True)
 
         # Clone it again
@@ -84,7 +84,7 @@ class GitWrapperClone(GitWrapperBase):
         for name, url in remotes.items():
             if name != default_remote:
                 try:
-                    logger.debug("Adding remote {remote}".format(remote=name))
+                    logger.debug("Adding remote %s", name)
                     r = self.repo.create_remote(name, url)
                 except git.GitCommandError as ex:
                     msg = "Issue with recreating remote {remote}. Error: {error}".format(remote=name, error=ex)

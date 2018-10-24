@@ -75,7 +75,7 @@ class GitWrapperBase(object):
         try:
             output = self.git.describe('--all', sha).split('-g')
         except git.CommandError as ex:
-            raise_from(exceptions.DescribeException("Error while running describe command on sha %s: %s" % (sha, ex)), ex)
+            raise_from(exceptions.DescribeException("Error while running describe command on sha {sha}: {error}".format(sha=sha, error=ex)), ex)
 
         if output:
             tag = output[0]

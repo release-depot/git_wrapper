@@ -21,7 +21,7 @@ class GitWrapperCommit(GitWrapperBase):
     def _expand_file_path(self, path):
         full_path = os.path.realpath(os.path.expanduser(path))
         if not os.path.isfile(full_path):
-            raise exceptions.FileDoesntExistException('%s is not a file.' % full_path)
+            raise exceptions.FileDoesntExistException('{path} is not a file.'.format(path=full_path))
         return full_path
 
     def commit(self, message, signoff=False):
@@ -43,9 +43,9 @@ class GitWrapperCommit(GitWrapperBase):
             return False
 
         # Commit the changes
-        logger.debug("Preparing to commit changes to the following files: %s" % changes)
+        logger.debug("Preparing to commit changes to the following files: %s", changes)
         commit = self.repo.git.commit(message=message, all=True, signoff=signoff)
-        logger.info("Committed changes as commit %s" % commit)
+        logger.info("Committed changes as commit %s", commit)
 
     @reference_exists('branch_name')
     def apply_patch(self, branch_name, path):
@@ -61,14 +61,14 @@ class GitWrapperCommit(GitWrapperBase):
         try:
             self.repo.git.checkout(branch_name)
         except git.GitCommandError as ex:
-            msg = "Could not checkout branch %s. Error: %s" % (branch_name, ex)
+            msg = "Could not checkout branch {name}. Error: {error}".format(name=branch_name, error=ex)
             raise_from(exceptions.CheckoutException(msg), ex)
 
         # Apply the patch file
         try:
             self.repo.git.am(full_path)
         except git.GitCommandError as ex:
-            msg = "Could not apply patch %s on branch %s. Error: %s" % (path, branch_name, ex)
+            msg = "Could not apply patch {path} on branch {name}. Error: {error}".format(path=full_path, name=branch_name, error=ex)
             raise_from(exceptions.ChangeNotAppliedException(msg), ex)
 
     @reference_exists('branch_name')
@@ -82,7 +82,7 @@ class GitWrapperCommit(GitWrapperBase):
         """
         # Ensure we don't commit more than we mean to
         if self.repo.is_dirty():
-            msg = "Repository %s contains uncommitted changes. Please clean workspace before proceeding." % self.repo.working_dir
+            msg = "Repository {repo} contains uncommitted changes. Please clean workspace before proceeding.".format(repo=self.repo.working_dir)
             raise exceptions.DirtyRepositoryException(msg)
 
         # Check diff file exists
@@ -92,14 +92,14 @@ class GitWrapperCommit(GitWrapperBase):
         try:
             self.repo.git.checkout(branch_name)
         except git.GitCommandError as ex:
-            msg = "Could not checkout branch %s. Error: %s" % (branch_name, ex)
+            msg = "Could not checkout branch {name}. Error: {error}".format(name=branch_name, error=ex)
             raise_from(exceptions.CheckoutException(msg), ex)
 
         # Apply the diff
         try:
             self.repo.git.apply(full_path)
         except git.GitCommandError as ex:
-            msg = "Could not apply diff on branch %s. Error: %s" % (branch_name, ex)
+            msg = "Could not apply diff on branch {name}. Error: {error}".format(name=branch_name, error=ex)
             raise_from(exceptions.ChangeNotAppliedException(msg), ex)
 
         # Commit
@@ -114,7 +114,7 @@ class GitWrapperCommit(GitWrapperBase):
         try:
             self.repo.git.revert(hash_, no_edit=True)
         except git.GitCommandError as ex:
-            msg = "Revert failed for hash %s. Error: %s" % (hash_, ex)
+            msg = "Revert failed for hash {hash_}. Error: {error}".format(hash_=hash_, error=ex)
             raise_from(exceptions.RevertException(msg), ex)
 
     def abort(self):
@@ -122,7 +122,7 @@ class GitWrapperCommit(GitWrapperBase):
         try:
             self.repo.git.am('--abort')
         except git.GitCommandError as ex:
-            msg = "Failed to abort git am operation. Error: %s" % ex
+            msg = "Failed to abort git am operation. Error: {0}".format(ex)
             raise_from(exceptions.AbortException(msg), ex)
 
     def reverse(self, diff_path):
@@ -132,10 +132,10 @@ class GitWrapperCommit(GitWrapperBase):
         """
         full_path = os.path.expanduser(diff_path)
         if not os.path.isfile(full_path):
-            raise exceptions.FileDoesntExistException('%s is not a file.' % full_path)
+            raise exceptions.FileDoesntExistException('{path} is not a file.'.format(path=full_path))
 
         try:
             self.repo.git.apply(full_path, reverse=True)
         except git.GitCommandError as ex:
-            msg = "Reversing diff failed. Error: %s" % ex
+            msg = "Reversing diff failed. Error: {0}".format(ex)
             raise_from(exceptions.RevertException(msg), ex)
