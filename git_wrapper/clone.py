@@ -1,7 +1,6 @@
 #! /usr/bin/env python
 """This module acts as an interface for git repository management tasks"""
 
-import logging
 import os
 import shutil
 
@@ -12,17 +11,16 @@ from git_wrapper.base import GitWrapperBase
 from git_wrapper import exceptions
 
 
-logger = logging.getLogger(__name__)
-
-
 class GitWrapperClone(GitWrapperBase):
     """Provides git clone functionality"""
 
-    def __init__(self, path='', repo=None):
+    def __init__(self, path='', repo=None, logger=None):
         # If we're cloning for the first time, we may legitimately not
         # have a path or repo to use yet - so don't initialize just yet
         if path or repo:
-            super(GitWrapperClone, self).__init__(path=path, repo=repo)
+            super(GitWrapperClone, self).__init__(path=path, repo=repo, logger=logger)
+        else:
+            self._setup_logger(logger)
 
     def clone(self, clone_from, clone_to):
         """Clone a repository.
@@ -32,7 +30,7 @@ class GitWrapperClone(GitWrapperBase):
            :return git.Repo: Returns the newly created repo object
         """
         clone_to = os.path.realpath(os.path.expanduser(clone_to))
-        logger.debug("Preparing to clone repository %s into directory %s", clone_from, clone_to)
+        self.logger.debug("Preparing to clone repository %s into directory %s", clone_from, clone_to)
 
         try:
             repo = git.repo.base.Repo.clone_from(clone_from, clone_to)
@@ -52,14 +50,14 @@ class GitWrapperClone(GitWrapperBase):
         # Get local path for the repo
         local_path = self.repo.working_dir
 
-        logger.info("Preparing to delete and reclone repo %s", local_path)
+        self.logger.info("Preparing to delete and reclone repo %s", local_path)
 
         # Get all of the remotes info
         remotes = {}
         for r in self.repo.remotes:
             remotes[r.name] = r.url
 
-        logger.debug("Remotes for %s: %s", local_path, ' '.join(list(remotes)))
+        self.logger.debug("Remotes for %s: %s", local_path, ' '.join(list(remotes)))
 
         if len(remotes) == 0:
             msg = "No remotes found for repo {repo}, cannot reclone. Aborting deletion.".format(repo=local_path)
@@ -71,10 +69,10 @@ class GitWrapperClone(GitWrapperBase):
         else:
             default_remote = list(remotes)[0]
 
-        logger.debug("Default remote for cloning set to '%s'", default_remote)
+        self.logger.debug("Default remote for cloning set to '%s'", default_remote)
 
         # Delete the local repo
-        logger.info("Deleting local repo at %s", local_path)
+        self.logger.info("Deleting local repo at %s", local_path)
         shutil.rmtree(local_path, ignore_errors=True)
 
         # Clone it again
@@ -84,7 +82,7 @@ class GitWrapperClone(GitWrapperBase):
         for name, url in remotes.items():
             if name != default_remote:
                 try:
-                    logger.debug("Adding remote %s", name)
+                    self.logger.debug("Adding remote %s", name)
                     r = self.repo.create_remote(name, url)
                 except git.GitCommandError as ex:
                     msg = "Issue with recreating remote {remote}. Error: {error}".format(remote=name, error=ex)

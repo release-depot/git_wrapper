@@ -1,17 +1,12 @@
 #! /usr/bin/env python
 """This module acts as an interface for common git tasks"""
 
-import logging
-
 import git
 from future.utils import raise_from
 
 from git_wrapper.base import GitWrapperBase
 from git_wrapper import exceptions
 from git_wrapper.utils.decorators import reference_exists
-
-
-logger = logging.getLogger(__name__)
 
 
 class GitWrapperRebase(GitWrapperBase):
@@ -25,7 +20,7 @@ class GitWrapperRebase(GitWrapperBase):
            :param str branch_name: The name of the branch to rebase on
            :param str hash_: The commit hash or reference to rebase to
         """
-        logger.debug("Rebasing branch %s to hash %s. Repo currently at commit %s.", branch_name, hash_, self.repo.head.commit)
+        self.logger.debug("Rebasing branch %s to hash %s. Repo currently at commit %s.", branch_name, hash_, self.repo.head.commit)
 
         if self.repo.is_dirty():
             msg = "Repository {0} is dirty. Please clean workspace before proceeding.".format(self.repo.working_dir)
@@ -45,7 +40,7 @@ class GitWrapperRebase(GitWrapperBase):
             msg = "Could not rebase hash {hash_} onto branch {name}. Error: {error}".format(hash_=hash_, name=branch_name, error=ex)
             raise_from(exceptions.RebaseException(msg), ex)
 
-        logger.debug("Successfully rebased branch %s to %s", branch_name, hash_)
+        self.logger.debug("Successfully rebased branch %s to %s", branch_name, hash_)
 
     def abort(self):
         """Abort a rebase."""

@@ -1,7 +1,6 @@
 #! /usr/bin/env python
 """This module acts as an interface for common git commit tasks"""
 
-import logging
 import os
 
 import git
@@ -10,9 +9,6 @@ from future.utils import raise_from
 from git_wrapper.base import GitWrapperBase
 from git_wrapper import exceptions
 from git_wrapper.utils.decorators import reference_exists
-
-
-logger = logging.getLogger(__name__)
 
 
 class GitWrapperCommit(GitWrapperBase):
@@ -32,20 +28,20 @@ class GitWrapperCommit(GitWrapperBase):
            :param bool signoff: Whether to add signed-off-by to commit message
         """
         if not message or not isinstance(message, str):
-            logger.debug("Cannot create commit without commit message.")
+            self.logger.debug("Cannot create commit without commit message.")
             raise exceptions.CommitMessageMissingException('No commit message text provided.')
 
         # Add tracked files to the index
         self.repo.git.add(update=True)
         changes = self.repo.git.diff(name_only=True, staged=True)
         if not changes:
-            logger.info("No changes to commit.")
+            self.logger.info("No changes to commit.")
             return False
 
         # Commit the changes
-        logger.debug("Preparing to commit changes to the following files: %s", changes)
+        self.logger.debug("Preparing to commit changes to the following files: %s", changes)
         commit = self.repo.git.commit(message=message, all=True, signoff=signoff)
-        logger.info("Committed changes as commit %s", commit)
+        self.logger.info("Committed changes as commit %s", commit)
 
     @reference_exists('branch_name')
     def apply_patch(self, branch_name, path):
