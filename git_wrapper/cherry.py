@@ -1,21 +1,17 @@
 #! /usr/bin/env python
 """This module acts as an interface for common git tasks"""
 
-import logging
 import re
 
 from git_wrapper.base import GitWrapperBase
 
 
-logger = logging.getLogger(__name__)
-
-
 class GitWrapperCherry(GitWrapperBase):
     """Provides git cherry functionality"""
 
-    def __init__(self, path='', repo=None):
+    def __init__(self, *args, **kwargs):
         """Constructor for GitWrapperCherry"""
-        super(GitWrapperCherry, self).__init__(path=path, repo=repo)
+        super(GitWrapperCherry, self).__init__(*args, **kwargs)
         self._head_only_regex = re.compile(r'^\+\s(.*?)\s(.*)')
         self._equivalent_regex = re.compile(r'^\-\s(.*?)\s(.*)')
 
@@ -31,10 +27,10 @@ class GitWrapperCherry(GitWrapperBase):
 
     def on_head_only(self, upstream, head):
         """Get new patches between upstream and head"""
-        logger.debug("Get new patches between upstream (%s) and head (%s)", upstream, head)
+        self.logger.debug("Get new patches between upstream (%s) and head (%s)", upstream, head)
         return self._run_cherry(upstream, head, self._head_only_regex)
 
     def equivalent(self, upstream, head):
         """Get patches that are in both upstream and head"""
-        logger.debug("Get patches that are in both upstream (%s) and head (%s)", upstream, head)
+        self.logger.debug("Get patches that are in both upstream (%s) and head (%s)", upstream, head)
         return self._run_cherry(upstream, head, self._equivalent_regex)

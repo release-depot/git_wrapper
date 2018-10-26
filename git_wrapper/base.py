@@ -9,13 +9,10 @@ from future.utils import raise_from
 from git_wrapper import exceptions
 
 
-logger = logging.getLogger(__name__)
-
-
 class GitWrapperBase(object):
     """Provides a wrapper to interact with a git repository"""
 
-    def __init__(self, path='', repo=None):
+    def __init__(self, path='', repo=None, logger=None):
         """Constructor for GitUtilBase object
 
             :param str path: Path to a git repo Default('')
@@ -23,6 +20,13 @@ class GitWrapperBase(object):
         """
         self.__repo = None  # Added to clear pylint warnings
         self.__setup(path, repo)
+        self._setup_logger(logger)
+
+    def _setup_logger(self, logger):
+        if logger:
+            self.logger = logger
+        else:
+            self.logger = logging.getLogger(__name__)
 
     def __setup(self, path, repo):
         """Sets the path and repo after performing validation
@@ -75,7 +79,8 @@ class GitWrapperBase(object):
         try:
             output = self.git.describe('--all', sha).split('-g')
         except git.CommandError as ex:
-            raise_from(exceptions.DescribeException("Error while running describe command on sha {sha}: {error}".format(sha=sha, error=ex)), ex)
+            msg = "Error while running describe command on sha {sha}: {error}".format(sha=sha, error=ex)
+            raise_from(exceptions.DescribeException(msg), ex)
 
         if output:
             tag = output[0]
@@ -94,20 +99,20 @@ class GitWrapperBase(object):
             :param str url: The url to use for the remote
             :return bool: True if the remote was added, False otherwise
         """
-        logger.debug("Adding remote %s (%s) to repo %s", name, url, self.repo.working_dir)
+        self.logger.debug("Adding remote %s (%s) to repo %s", name, url, self.repo.working_dir)
         ret_status = False
 
         try:
             remote = self.repo.create_remote(name, url)
         except git.CommandError as ex:
-            logger.debug("Failed to create new remote %s (%s). Error: %s", name, url, ex)
+            self.logger.debug("Failed to create new remote %s (%s). Error: %s", name, url, ex)
             return ret_status
 
         try:
             remote.update()
             ret_status = True
         except git.CommandError as ex:
-            logger.debug("Failed to update new remote %s (%s), removing it. Error: %s", name, url, ex)
+            self.logger.debug("Failed to update new remote %s (%s), removing it. Error: %s", name, url, ex)
             self.repo.delete_remote(remote)
 
         return ret_status
