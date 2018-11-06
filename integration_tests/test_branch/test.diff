@@ -1,0 +1,11 @@
+--- a/README.rst
++++ b/README.rst
+@@ -1,7 +1,7 @@
+ ===========
+ git_wrapper
+ ===========
+-
++Test (apply diff)
+
+ .. image:: https://img.shields.io/pypi/v/git_wrapper.svg
+         :target: https://pypi.python.org/pypi/git_wrapper

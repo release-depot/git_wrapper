@@ -1,0 +1,24 @@
+From 45e320cfcbf02a5e8bc3cd607f90949b0f5d0617 Mon Sep 17 00:00:00 2001
+From: Test Person <example@example.com>
+Date: Tue, 6 Nov 2018 11:47:28 +0000
+Subject: [PATCH] Test patch
+
+---
+ docs/installation.rst | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/docs/installation.rst b/docs/installation.rst
+index 6ff9ea0..95f0cba 100644
+--- a/docs/installation.rst
++++ b/docs/installation.rst
+@@ -9,7 +9,7 @@ Stable release
+ --------------
+
+ To install git_wrapper, run this command in your terminal:
+-
++Test.
+ .. code-block:: console
+
+     $ pip install git_wrapper
+--
+2.13.6

@@ -162,7 +162,7 @@ class GitBranch(object):
         try:
             self.git_repo.git.apply(full_path)
         except git.GitCommandError as ex:
-            msg = "Could not apply diff on branch {name}. Error: {error}".format(name=branch_name, error=ex)
+            msg = "Could not apply diff {path} on branch {name}. Error: {error}".format(path=full_path, name=branch_name, error=ex)
             raise_from(exceptions.ChangeNotAppliedException(msg), ex)
 
         # Commit
