@@ -4,7 +4,7 @@ from git_wrapper import exceptions
 from git_wrapper.repo import GitRepo
 
 
-def test_rebase(repo_root):
+def test_rebase(repo_root, rebase_cleanup):
     repo = GitRepo(repo_root)
     branch_name = "mybranches/test_repo"
     rebase_to = "2e6c014bc296be90a7ed04d155ea7d9da2240bbc"  # Hash for 0.1.0 tag
@@ -21,7 +21,7 @@ def test_rebase(repo_root):
     assert repo.repo.head.object.hexsha == rebase_to
 
 
-def test_abort_rebase(repo_root):
+def test_abort_rebase(repo_root, rebase_cleanup):
     repo = GitRepo(repo_root)
 
     # Set the stage for a failed rebase

@@ -26,6 +26,11 @@ def repo_root():
     repo.heads.master.checkout()
     repo.head.reset(origin.refs.master, index=True, working_tree=True)
 
+    # Remove extra local branches
+    for b in repo.branches:
+        if b.name != 'master':
+            repo.git.branch("-D", b.name)
+
 
 @pytest.fixture(scope="function")
 def clone_repo_root():
@@ -39,3 +44,25 @@ def clone_repo_root():
 @pytest.fixture
 def clone_repo_url():
     yield CLONE_REPO_URL
+
+
+@pytest.fixture(scope="function")
+def patch_cleanup():
+    # Avoid state leaking into other tests in case of early failure
+    yield
+    repo = git.Repo(REPO_ROOT)
+    try:
+        repo.git.am('--abort')
+    except git.GitCommandError:
+        pass
+
+
+@pytest.fixture(scope="function")
+def rebase_cleanup():
+    # Avoid state leaking into other tests in case of early failure
+    yield
+    repo = git.Repo(REPO_ROOT)
+    try:
+        repo.git.rebase('--abort')
+    except git.GitCommandError:
+        pass
