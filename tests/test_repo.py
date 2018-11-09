@@ -1,25 +1,15 @@
 #! /usr/bin/env python
 """Tests for GitRepo"""
 
-from mock import Mock, patch
+from mock import patch
 
 import pytest
 
 from git import CommandError
 
-from git_wrapper.repo import GitRepo
 from git_wrapper import exceptions
-
-
-def remote_generator(names):
-    """Generates objects to be used with git.Repo.remotes call"""
-    ret_data = []
-    for name in names:
-        obj = type('', (), {})()
-        obj.name = name
-        ret_data.append(obj)
-
-    return ret_data
+from git_wrapper.remote import GitRemote
+from git_wrapper.repo import GitRepo
 
 
 def test_repo(mock_repo):
@@ -54,21 +44,6 @@ def test_git_command(mock_repo):
     git_util = GitRepo('./', mock_repo)
 
     assert mock_repo.git is git_util.git
-
-
-def test_get_remotes_returns_list(mock_repo):
-    """
-    GIVEN GitRepo is initialized with a path and repo
-    WHEN get_remote_names is called
-    THEN a list of remote names is returned
-    """
-    expected = ['a', 'b', 'c']
-    attrs = {'remotes': remote_generator(expected)}
-    mock_repo.configure_mock(**attrs)
-
-    git_util = GitRepo('./', mock_repo)
-
-    assert expected == git_util.remote_names()
 
 
 def test_describe_tag_and_patch(mock_repo):
@@ -145,54 +120,24 @@ def test_describe_with_lightweight_tags(mock_repo):
     assert expected == git_util.describe('12345')
 
 
-def test_add_remote_adds(mock_repo):
+def test_remote_setter(mock_repo):
     """
-    GIVEN GitRepo initialized with a path and repo
-    WHEN add_remote is called with a name and url
-    THEN a TRUE status is returned
-    WITH update called
+    GIVEN GitRepo is initialized with a path and repo
+    WHEN the remote setter is called
+    THEN the remote is set as expected
     """
-    remote_mock = Mock()
-    update_mock = Mock()
-    remote_mock.attach_mock(update_mock, 'update')
-    mock_repo.create_remote.return_value = remote_mock
-    git_util = GitRepo('./', mock_repo)
-
-    assert git_util.add_remote('rdo', 'http://rdoproject.org') is True
-    assert update_mock.called is True
+    repo = GitRepo('./', mock_repo)
+    new_remote = GitRemote(git_repo=repo, logger=None)
+    repo.remote = new_remote
+    assert repo.remote == new_remote
 
 
-def test_add_remote_adds_fails(mock_repo):
+def test_remote_setter_wrong_type(mock_repo):
     """
-    GIVEN GitRepo initialized with a path and repo
-    WHEN add_remote is called with a name and url
-    AND the remote create fails with an exception
-    THEN a False status is returned
+    GIVEN GitRepo is initialized with a path and repo
+    WHEN the remote setter is called with the wrong type
+    THEN a TypeError is raised
     """
-    mock_repo.create_remote.side_effect = CommandError('create')
-    git_util = GitRepo('./', mock_repo)
-
-    assert git_util.add_remote('rdo', 'http://rdoproject.org') is False
-
-
-def test_add_remote_update_fails(mock_repo):
-    """
-    GIVEN GitRepo initialized with a path and repo
-    WHEN add_remote is called with a name and url
-    AND the remote update fails with an exception
-    THEN a False status is returned
-    WITH delete_remote called
-    """
-    remote_mock = Mock()
-    delete_mock = Mock()
-    update_mock = Mock(side_effect=CommandError('update'))
-    remote_mock.attach_mock(update_mock, 'update')
-
-    mock_repo.attach_mock(delete_mock, 'delete_remote')
-    mock_repo.create_remote.return_value = remote_mock
-
-    git_util = GitRepo('./', mock_repo)
-
-    assert git_util.add_remote('rdo', 'http://rdoproject.org') is False
-    assert update_mock.called is True
-    delete_mock.assert_called_once_with(remote_mock)
+    repo = GitRepo('./', mock_repo)
+    with pytest.raises(TypeError):
+        repo.remote = repo
