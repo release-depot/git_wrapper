@@ -7,6 +7,7 @@ import git
 from future.utils import raise_from
 
 from git_wrapper import exceptions
+from git_wrapper.remote import GitRemote
 
 
 class GitRepo(object):
@@ -14,9 +15,9 @@ class GitRepo(object):
 
     def __init__(self, path='', repo=None, logger=None):
         """Constructor for GitRepo object
-
             :param str path: Path to a git repo Default('')
             :param git.Repo repo: An already constructed git.Repo object to use Default(None)
+            :param logging.Logger logger: A pre-configured Python Logger object
         """
         self.__repo = None  # Added to clear pylint warnings
         self.__setup(path, repo)
@@ -27,6 +28,8 @@ class GitRepo(object):
             self.logger = logger
         else:
             self.logger = logging.getLogger(__name__)
+
+        self._remote = None
 
     def __setup(self, path, repo):
         """Sets the path and repo after performing validation
@@ -62,13 +65,6 @@ class GitRepo(object):
         """Returns the git command for a given repo"""
         return self.repo.git
 
-    def remote_names(self):
-        """Returns a list of remotes for a given repo
-
-            :return list: A list of utf-8 encoded remote names
-        """
-        return [x.name for x in self.repo.remotes]
-
     def describe(self, sha):
         """Return tag and commit info for a given sha
 
@@ -92,27 +88,19 @@ class GitRepo(object):
                 ret_data['patch'] = output[1]
         return ret_data
 
-    def add_remote(self, name, url):
-        """Adds a remote to the given repo
+    @property
+    def remote(self):
+        """Return object to act on the repo's remotes"""
+        if not self._remote:
+            self._remote = GitRemote(git_repo=self, logger=self.logger)
+        return self._remote
 
-            :param str name: The name for the remote
-            :param str url: The url to use for the remote
-            :return bool: True if the remote was added, False otherwise
+    @remote.setter
+    def remote(self, new_remote):
+        """Set up object to interact with Remotes
+
+            :param git_wrapper.remote.GitRemote new_remote: An already constructed GitRemote object to use
         """
-        self.logger.debug("Adding remote %s (%s) to repo %s", name, url, self.repo.working_dir)
-        ret_status = False
-
-        try:
-            remote = self.repo.create_remote(name, url)
-        except git.CommandError as ex:
-            self.logger.debug("Failed to create new remote %s (%s). Error: %s", name, url, ex)
-            return ret_status
-
-        try:
-            remote.update()
-            ret_status = True
-        except git.CommandError as ex:
-            self.logger.debug("Failed to update new remote %s (%s), removing it. Error: %s", name, url, ex)
-            self.repo.delete_remote(remote)
-
-        return ret_status
+        if not isinstance(new_remote, GitRemote):
+            raise TypeError("Remote must be a GitRemote object.")
+        self._remote = new_remote
