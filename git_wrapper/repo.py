@@ -9,11 +9,11 @@ from future.utils import raise_from
 from git_wrapper import exceptions
 
 
-class GitWrapperBase(object):
+class GitRepo(object):
     """Provides a wrapper to interact with a git repository"""
 
     def __init__(self, path='', repo=None, logger=None):
-        """Constructor for GitUtilBase object
+        """Constructor for GitRepo object
 
             :param str path: Path to a git repo Default('')
             :param git.Repo repo: An already constructed git.Repo object to use Default(None)

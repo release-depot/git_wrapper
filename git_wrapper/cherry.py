@@ -3,10 +3,10 @@
 
 import re
 
-from git_wrapper.base import GitWrapperBase
+from git_wrapper.repo import GitRepo
 
 
-class GitWrapperCherry(GitWrapperBase):
+class GitWrapperCherry(GitRepo):
     """Provides git cherry functionality"""
 
     def __init__(self, *args, **kwargs):

@@ -7,11 +7,11 @@ import shutil
 import git
 from future.utils import raise_from
 
-from git_wrapper.base import GitWrapperBase
+from git_wrapper.repo import GitRepo
 from git_wrapper import exceptions
 
 
-class GitWrapperClone(GitWrapperBase):
+class GitWrapperClone(GitRepo):
     """Provides git clone functionality"""
 
     def __init__(self, path='', repo=None, logger=None):

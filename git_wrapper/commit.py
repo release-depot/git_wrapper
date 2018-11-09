@@ -6,12 +6,12 @@ import os
 import git
 from future.utils import raise_from
 
-from git_wrapper.base import GitWrapperBase
+from git_wrapper.repo import GitRepo
 from git_wrapper import exceptions
 from git_wrapper.utils.decorators import reference_exists
 
 
-class GitWrapperCommit(GitWrapperBase):
+class GitWrapperCommit(GitRepo):
     """Provides git commit functionality"""
 
     def _expand_file_path(self, path):
