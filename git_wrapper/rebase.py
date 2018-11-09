@@ -4,12 +4,12 @@
 import git
 from future.utils import raise_from
 
-from git_wrapper.base import GitWrapperBase
+from git_wrapper.repo import GitRepo
 from git_wrapper import exceptions
 from git_wrapper.utils.decorators import reference_exists
 
 
-class GitWrapperRebase(GitWrapperBase):
+class GitWrapperRebase(GitRepo):
     """Provides git rebase functionality"""
 
     @reference_exists("branch_name")
