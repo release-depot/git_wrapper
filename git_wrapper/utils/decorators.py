@@ -15,7 +15,11 @@ def reference_exists(ref):
     def wrapper(func, instance, args, kwargs):
         all_args = inspect.getcallargs(func, *args, **kwargs)
         try:
-            git.repo.fun.name_to_object(all_args['self'].repo, all_args[ref])
+            if hasattr(all_args['self'], 'repo'):
+                repo = all_args['self'].repo
+            else:
+                repo = all_args['self'].git_repo.repo
+            git.repo.fun.name_to_object(repo, all_args[ref])
         except git.exc.BadName as ex:
             msg = "Could not find %s %s." % (ref, all_args[ref])
             raise_from(exceptions.ReferenceNotFoundException(msg), ex)
