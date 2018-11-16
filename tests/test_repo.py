@@ -8,6 +8,7 @@ import git
 import pytest
 
 from git_wrapper import exceptions
+from git_wrapper.branch import GitBranch
 from git_wrapper.remote import GitRemote
 from git_wrapper.repo import GitRepo
 
@@ -141,6 +142,29 @@ def test_remote_setter_wrong_type(mock_repo):
     repo = GitRepo('./', mock_repo)
     with pytest.raises(TypeError):
         repo.remote = repo
+
+
+def test_branch_setter(mock_repo):
+    """
+    GIVEN GitRepo is initialized with a path and repo
+    WHEN the branch setter is called
+    THEN the branch is set as expected
+    """
+    repo = GitRepo('./', mock_repo)
+    new_branch = GitBranch(git_repo=repo, logger=None)
+    repo.branch = new_branch
+    assert repo.branch == new_branch
+
+
+def test_branch_setter_wrong_type(mock_repo):
+    """
+    GIVEN GitRepo is initialized with a path and repo
+    WHEN the branch setter is called with the wrong type
+    THEN a TypeError is raised
+    """
+    repo = GitRepo('./', mock_repo)
+    with pytest.raises(TypeError):
+        repo.branch = repo
 
 
 def test_clone():

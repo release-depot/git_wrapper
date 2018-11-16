@@ -8,6 +8,7 @@ import shutil
 import git
 from future.utils import raise_from
 
+from git_wrapper.branch import GitBranch
 from git_wrapper import exceptions
 from git_wrapper.remote import GitRemote
 
@@ -31,6 +32,7 @@ class GitRepo(object):
         else:
             self.logger = logging.getLogger(__name__)
 
+        self._branch = None
         self._remote = None
 
     def __setup(self, path, repo):
@@ -169,3 +171,20 @@ class GitRepo(object):
         if not isinstance(new_remote, GitRemote):
             raise TypeError("Remote must be a GitRemote object.")
         self._remote = new_remote
+
+    @property
+    def branch(self):
+        """Return object to act on the repo's branches"""
+        if not self._branch:
+            self._branch = GitBranch(git_repo=self, logger=self.logger)
+        return self._branch
+
+    @branch.setter
+    def branch(self, new_branch):
+        """Set up object to interact with Branches
+
+            :param git_wrapper.branch.GitBranch new_branch: An already constructed GitBranch object to use
+        """
+        if not isinstance(new_branch, GitBranch):
+            raise TypeError("Branch must be a GitBranch object.")
+        self._branch = new_branch
