@@ -1,6 +1,8 @@
 #! /usr/bin/env python
 """This module acts as an interface for acting on git branches"""
 
+import re
+
 import git
 from future.utils import raise_from
 
@@ -18,6 +20,28 @@ class GitBranch(object):
         """
         self.git_repo = git_repo
         self.logger = logger
+
+    def _run_cherry(self, upstream, head, regex):
+        """Run the git cherry command and return lines in a dict"""
+        args = ['-v', upstream, head]
+        ret_data = {}
+        for line in self.git_repo.git.cherry(*args).split('\n'):
+            match = regex.match(line)
+            if match is not None:
+                ret_data[match.group(1)] = match.group(2)
+        return ret_data
+
+    def cherry_on_head_only(self, upstream, head):
+        """Get new patches between upstream and head"""
+        self.logger.debug("Get new patches between upstream (%s) and head (%s)", upstream, head)
+        head_only_regex = re.compile(r'^\+\s(.*?)\s(.*)')
+        return self._run_cherry(upstream, head, head_only_regex)
+
+    def cherry_equivalent(self, upstream, head):
+        """Get patches that are in both upstream and head"""
+        self.logger.debug("Get patches that are in both upstream (%s) and head (%s)", upstream, head)
+        equivalent_regex = re.compile(r'^\-\s(.*?)\s(.*)')
+        return self._run_cherry(upstream, head, equivalent_regex)
 
     @reference_exists("branch_name")
     @reference_exists("hash_")
