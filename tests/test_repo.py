@@ -9,6 +9,7 @@ import pytest
 
 from git_wrapper import exceptions
 from git_wrapper.branch import GitBranch
+from git_wrapper.commit import GitCommit
 from git_wrapper.remote import GitRemote
 from git_wrapper.repo import GitRepo
 
@@ -165,6 +166,29 @@ def test_branch_setter_wrong_type(mock_repo):
     repo = GitRepo('./', mock_repo)
     with pytest.raises(TypeError):
         repo.branch = repo
+
+
+def test_commit_setter(mock_repo):
+    """
+    GIVEN GitRepo is initialized with a path and repo
+    WHEN the commit setter is called
+    THEN the commit is set as expected
+    """
+    repo = GitRepo('./', mock_repo)
+    new_commit = GitCommit(git_repo=repo, logger=None)
+    repo.commit = new_commit
+    assert repo.commit == new_commit
+
+
+def test_commit_setter_wrong_type(mock_repo):
+    """
+    GIVEN GitRepo is initialized with a path and repo
+    WHEN the commit setter is called with the wrong type
+    THEN a TypeError is raised
+    """
+    repo = GitRepo('./', mock_repo)
+    with pytest.raises(TypeError):
+        repo.commit = repo
 
 
 def test_clone():

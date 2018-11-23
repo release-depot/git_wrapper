@@ -9,6 +9,7 @@ import git
 from future.utils import raise_from
 
 from git_wrapper.branch import GitBranch
+from git_wrapper.commit import GitCommit
 from git_wrapper import exceptions
 from git_wrapper.remote import GitRemote
 
@@ -33,6 +34,7 @@ class GitRepo(object):
             self.logger = logging.getLogger(__name__)
 
         self._branch = None
+        self._commit = None
         self._remote = None
 
     def __setup(self, path, repo):
@@ -188,3 +190,20 @@ class GitRepo(object):
         if not isinstance(new_branch, GitBranch):
             raise TypeError("Branch must be a GitBranch object.")
         self._branch = new_branch
+
+    @property
+    def commit(self):
+        """Return object to act on the repo's commits"""
+        if not self._commit:
+            self._commit = GitCommit(git_repo=self, logger=self.logger)
+        return self._commit
+
+    @commit.setter
+    def commit(self, new_commit):
+        """Set up object to interact with Commits
+
+            :param git_wrapper.commit.GitCommit new_commit: An already constructed GitCommit object to use
+        """
+        if not isinstance(new_commit, GitCommit):
+            raise TypeError("Commit must be a GitCommit object.")
+        self._commit = new_commit

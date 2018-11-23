@@ -1,18 +1,25 @@
 #! /usr/bin/env python
-"""This module acts as an interface for common git commit tasks"""
+"""This module acts as an interface for acting on git commits"""
 
 import os
 
 import git
 from future.utils import raise_from
 
-from git_wrapper.repo import GitRepo
 from git_wrapper import exceptions
 from git_wrapper.utils.decorators import reference_exists
 
 
-class GitWrapperCommit(GitRepo):
-    """Provides git commit functionality"""
+class GitCommit(object):
+
+    def __init__(self, git_repo, logger):
+        """Constructor for GitCommit object
+
+            :param repo.GitRepo git_repo: An already constructed GitRepo object to use
+            :param logging.Logger logger: A pre-configured Python Logger object
+        """
+        self.git_repo = git_repo
+        self.logger = logger
 
     def _expand_file_path(self, path):
         full_path = os.path.realpath(os.path.expanduser(path))
@@ -32,15 +39,15 @@ class GitWrapperCommit(GitRepo):
             raise exceptions.CommitMessageMissingException('No commit message text provided.')
 
         # Add tracked files to the index
-        self.repo.git.add(update=True)
-        changes = self.repo.git.diff(name_only=True, staged=True)
+        self.git_repo.git.add(update=True)
+        changes = self.git_repo.git.diff(name_only=True, staged=True)
         if not changes:
             self.logger.info("No changes to commit.")
             return False
 
         # Commit the changes
         self.logger.debug("Preparing to commit changes to the following files: %s", changes)
-        commit = self.repo.git.commit(message=message, all=True, signoff=signoff)
+        commit = self.git_repo.git.commit(message=message, all=True, signoff=signoff)
         self.logger.info("Committed changes as commit %s", commit)
 
     @reference_exists('branch_name')
@@ -55,14 +62,14 @@ class GitWrapperCommit(GitRepo):
 
         # Checkout
         try:
-            self.repo.git.checkout(branch_name)
+            self.git_repo.git.checkout(branch_name)
         except git.GitCommandError as ex:
             msg = "Could not checkout branch {name}. Error: {error}".format(name=branch_name, error=ex)
             raise_from(exceptions.CheckoutException(msg), ex)
 
         # Apply the patch file
         try:
-            self.repo.git.am(full_path)
+            self.git_repo.git.am(full_path)
         except git.GitCommandError as ex:
             msg = "Could not apply patch {path} on branch {name}. Error: {error}".format(path=full_path, name=branch_name, error=ex)
             raise_from(exceptions.ChangeNotAppliedException(msg), ex)
@@ -77,8 +84,9 @@ class GitWrapperCommit(GitRepo):
            :param bool signoff: Whether to add signed-off-by to commit message
         """
         # Ensure we don't commit more than we mean to
-        if self.repo.is_dirty():
-            msg = "Repository {repo} contains uncommitted changes. Please clean workspace before proceeding.".format(repo=self.repo.working_dir)
+        if self.git_repo.repo.is_dirty():
+            msg = ("Repository {repo} contains uncommitted changes. Please clean workspace "
+                   "before proceeding.".format(repo=self.git_repo.repo.working_dir))
             raise exceptions.DirtyRepositoryException(msg)
 
         # Check diff file exists
@@ -86,14 +94,14 @@ class GitWrapperCommit(GitRepo):
 
         # Checkout
         try:
-            self.repo.git.checkout(branch_name)
+            self.git_repo.git.checkout(branch_name)
         except git.GitCommandError as ex:
             msg = "Could not checkout branch {name}. Error: {error}".format(name=branch_name, error=ex)
             raise_from(exceptions.CheckoutException(msg), ex)
 
         # Apply the diff
         try:
-            self.repo.git.apply(full_path)
+            self.git_repo.git.apply(full_path)
         except git.GitCommandError as ex:
             msg = "Could not apply diff on branch {name}. Error: {error}".format(name=branch_name, error=ex)
             raise_from(exceptions.ChangeNotAppliedException(msg), ex)
@@ -108,7 +116,7 @@ class GitWrapperCommit(GitRepo):
             :param str hash_: The commit hash or reference to rebase to
         """
         try:
-            self.repo.git.revert(hash_, no_edit=True)
+            self.git_repo.git.revert(hash_, no_edit=True)
         except git.GitCommandError as ex:
             msg = "Revert failed for hash {hash_}. Error: {error}".format(hash_=hash_, error=ex)
             raise_from(exceptions.RevertException(msg), ex)
@@ -116,7 +124,7 @@ class GitWrapperCommit(GitRepo):
     def abort(self):
         """Abort applying a patch (git am)."""
         try:
-            self.repo.git.am('--abort')
+            self.git_repo.git.am('--abort')
         except git.GitCommandError as ex:
             msg = "Failed to abort git am operation. Error: {0}".format(ex)
             raise_from(exceptions.AbortException(msg), ex)
@@ -131,7 +139,7 @@ class GitWrapperCommit(GitRepo):
             raise exceptions.FileDoesntExistException('{path} is not a file.'.format(path=full_path))
 
         try:
-            self.repo.git.apply(full_path, reverse=True)
+            self.git_repo.git.apply(full_path, reverse=True)
         except git.GitCommandError as ex:
             msg = "Reversing diff failed. Error: {0}".format(ex)
             raise_from(exceptions.RevertException(msg), ex)
