@@ -10,6 +10,80 @@ from git_wrapper.repo import GitRepo
 from git_wrapper import exceptions
 
 
+def test_describe_tag_and_patch(mock_repo):
+    """
+    GIVEN GitRepo is initialized with a path and repo
+    WHEN commit.describe is called with a tag and patch value
+    THEN a dictionary with tag and patch keys is returned
+    """
+    expected = {'tag': '1.0.0', 'patch': '12345'}
+    attrs = {'describe.return_value': '1.0.0-g12345'}
+    mock_repo.git.configure_mock(**attrs)
+
+    repo = GitRepo('./', mock_repo)
+
+    assert expected == repo.commit.describe('12345')
+
+
+def test_describe_tag_only(mock_repo):
+    """
+    GIVEN GitRepo initialized with a path and repo
+    WHEN commit.describe is called a tag value only
+    THEN a dictionary with a tag and empty patch is returned
+    """
+    expected = {'tag': '1.0.0', 'patch': ''}
+    attrs = {'describe.return_value': '1.0.0'}
+    mock_repo.git.configure_mock(**attrs)
+
+    repo = GitRepo('./', mock_repo)
+
+    assert expected == repo.commit.describe('12345')
+
+
+def test_describe_empty(mock_repo):
+    """
+    GIVEN GitRepo initialized with a path and repo
+    WHEN commit.describe is called with a bad hash
+    THEN a dictionary with an empty tag and patch is returned
+    """
+    expected = {'tag': '', 'patch': ''}
+    attrs = {'describe.return_value': ''}
+    mock_repo.git.configure_mock(**attrs)
+
+    repo = GitRepo('./', mock_repo)
+
+    assert expected == repo.commit.describe('12345')
+
+
+def test_describe_sha_doesnt_exist(mock_repo):
+    """
+    GIVEN GitRepo initialized with a path and repo
+    WHEN commit.describe is called with a non-existent hash
+    THEN a ReferenceNotFoundException is raised
+    """
+    repo = GitRepo('./', mock_repo)
+    repo.git.describe.side_effect = git.CommandError('describe')
+
+    with pytest.raises(exceptions.DescribeException):
+        repo.commit.describe('12345')
+
+
+def test_describe_with_lightweight_tags(mock_repo):
+    """
+    GIVEN GitRepo initialized with a path and repo
+    WHEN commit.describe is called with a good hash for a lightweight tag
+    THEN a dictionary with a tag and empty patch is returned
+    AND the tag/ prefix is stripped from the tag
+    """
+    expected = {'tag': '1.0.0-lw', 'patch': ''}
+    attrs = {'describe.return_value': 'tag/1.0.0-lw'}
+    mock_repo.git.configure_mock(**attrs)
+
+    repo = GitRepo('./', mock_repo)
+
+    assert expected == repo.commit.describe('12345')
+
+
 def test_commit(mock_repo):
     """
     GIVEN GitRepo initialized with a path and repo

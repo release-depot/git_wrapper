@@ -19,6 +19,29 @@ class GitCommit(object):
         self.git_repo = git_repo
         self.logger = logger
 
+    def describe(self, sha):
+        """Return tag and commit info for a given sha
+
+           :param str sha: The SHA1 of the commit to describe
+           :return dict: A dict with tag and patch data
+        """
+        ret_data = {'tag': '', 'patch': ''}
+        try:
+            output = self.git_repo.git.describe('--all', sha).split('-g')
+        except git.CommandError as ex:
+            msg = "Error while running describe command on sha {sha}: {error}".format(sha=sha, error=ex)
+            raise_from(exceptions.DescribeException(msg), ex)
+
+        if output:
+            tag = output[0]
+            # Lightweight tags have a tag/ prefix when returned
+            if tag.startswith('tag/'):
+                tag = tag[4:]
+            ret_data['tag'] = tag
+            if len(output) > 1:
+                ret_data['patch'] = output[1]
+        return ret_data
+
     def commit(self, message, signoff=False):
         """Create a commit for changes to tracked files in the repo.
            Equivalent to `git commit -a -m <message>`.
