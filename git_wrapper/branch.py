@@ -23,13 +23,22 @@ class GitBranch(object):
         self.logger = logger
 
     def _expand_file_path(self, path):
+        """Expand a given path into an absolute path and check for presence.
+
+           :param str path: Path
+        """
         full_path = os.path.realpath(os.path.expanduser(path))
         if not os.path.isfile(full_path):
             raise exceptions.FileDoesntExistException('{path} is not a file.'.format(path=full_path))
         return full_path
 
     def _run_cherry(self, upstream, head, regex):
-        """Run the git cherry command and return lines in a dict"""
+        """Run the git cherry command and return lines in a dict.
+
+           :param str upstream: Branch name
+           :param str head: Branch name
+           :param str regex: Regular expression to run on the cherry result
+        """
         args = ['-v', upstream, head]
         ret_data = {}
         for line in self.git_repo.git.cherry(*args).split('\n'):
@@ -39,13 +48,21 @@ class GitBranch(object):
         return ret_data
 
     def cherry_on_head_only(self, upstream, head):
-        """Get new patches between upstream and head"""
+        """Get new patches between upstream and head.
+
+           :param str upstream: Branch name
+           :param str head: Branch name
+        """
         self.logger.debug("Get new patches between upstream (%s) and head (%s)", upstream, head)
         head_only_regex = re.compile(r'^\+\s(.*?)\s(.*)')
         return self._run_cherry(upstream, head, head_only_regex)
 
     def cherry_equivalent(self, upstream, head):
-        """Get patches that are in both upstream and head"""
+        """Get patches that are in both upstream and head.
+
+           :param str upstream: Branch name
+           :param str head: Branch name
+        """
         self.logger.debug("Get patches that are in both upstream (%s) and head (%s)", upstream, head)
         equivalent_regex = re.compile(r'^\-\s(.*?)\s(.*)')
         return self._run_cherry(upstream, head, equivalent_regex)

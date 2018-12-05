@@ -19,23 +19,28 @@ class GitRepo(object):
 
     def __init__(self, path='', repo=None, logger=None):
         """Constructor for GitRepo object
+
             :param str path: Path to a git repo Default('')
             :param git.Repo repo: An already constructed git.Repo object to use Default(None)
             :param logging.Logger logger: A pre-configured Python Logger object
         """
         self.__repo = None  # Added to clear pylint warnings
+        self._branch = None
+        self._commit = None
+        self._remote = None
+
         self.__setup(path, repo)
         self._setup_logger(logger)
 
     def _setup_logger(self, logger):
+        """Set up a pre-configured logger or create a new one
+
+            :param logging.Logger logger: A pre-configured Python Logger object
+        """
         if logger:
             self.logger = logger
         else:
             self.logger = logging.getLogger(__name__)
-
-        self._branch = None
-        self._commit = None
-        self._remote = None
 
     def __setup(self, path, repo):
         """Sets the path and repo after performing validation
