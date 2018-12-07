@@ -1,6 +1,8 @@
 #! /usr/bin/env python
 """Base fixtures for unit tests"""
 
+from collections import namedtuple
+from datetime import datetime
 from mock import Mock
 
 import git
@@ -19,3 +21,27 @@ def mock_repo():
     repo_mock.remotes = [remote]
 
     return repo_mock
+
+
+@pytest.fixture
+def fake_commits(count=3):
+    """A few commit-like objects, to test log_diff functions"""
+    Author = namedtuple("Author", ["name", "email"])
+    Commit = namedtuple("Commit", ["hexsha", "message", "summary", "author",
+                                   "authored_datetime"])
+
+    commits = []
+    for i in range(0, count):
+        author = Author(name="Test Author", email="testauthor@example.com")
+        msg = "This is a commit message (#{0})\nWith some details.".format(i)
+
+        commit = Commit(
+            hexsha="00{0}0000000000000000".format(i),
+            message=msg,
+            summary="This is a commit message (#{0})".format(i),
+            author=author,
+            authored_datetime=datetime(2018, 12, 5, 10, 36, 19)
+        )
+        commits.append(commit)
+
+    return commits
