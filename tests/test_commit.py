@@ -140,14 +140,17 @@ def test_commit_message_is_not_a_string(mock_repo):
 def test_revert(mock_repo):
     """
     GIVEN GitRepo initialized with a path and repo
-    WHEN commit.revert is called with a valid hash_
+    WHEN commit.revert is called with a valid hash_ and no message
     THEN git.revert called
+    AND git.commit is not called
     """
     repo = GitRepo('./', mock_repo)
 
     with patch('git.repo.fun.name_to_object'):
         repo.commit.revert('123456')
     assert repo.git.revert.called is True
+    # commit only called when there's a message explicitly included
+    assert repo.git.commit.called is False
 
 
 def test_revert_hash_not_found(mock_repo):
@@ -178,3 +181,18 @@ def test_revert_error(mock_repo):
     with patch('git.repo.fun.name_to_object'):
         with pytest.raises(exceptions.RevertException):
             repo.commit.revert('123456')
+
+
+def test_revert_with_message(mock_repo):
+    """
+    GIVEN GitRepo initialized with a path and repo
+    WHEN commit.revert is called with a valid hash_ and a message
+    THEN git.revert is called
+    AND git.commit is called
+    """
+    repo = GitRepo('./', mock_repo)
+
+    with patch('git.repo.fun.name_to_object'):
+        repo.commit.revert('123456', "My message")
+    assert repo.git.revert.called is True
+    assert repo.git.commit.called is True
