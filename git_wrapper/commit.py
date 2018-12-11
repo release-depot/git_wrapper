@@ -66,13 +66,24 @@ class GitCommit(object):
         self.logger.info("Committed changes as commit %s", commit)
 
     @reference_exists('hash_')
-    def revert(self, hash_):
+    def revert(self, hash_, message=None):
         """Revert a specified commit.
 
             :param str hash_: The commit hash or reference to rebase to
+            :param str message: Extra info to be included in commit message
         """
         try:
             self.git_repo.git.revert(hash_, no_edit=True)
         except git.GitCommandError as ex:
-            msg = "Revert failed for hash {hash_}. Error: {error}".format(hash_=hash_, error=ex)
+            msg = "Revert failed for hash {hash_}. Error: {error}".format(
+                hash_=hash_, error=ex)
             raise_from(exceptions.RevertException(msg), ex)
+
+        if message:
+            commit = git.repo.fun.name_to_object(self.git_repo.repo, hash_)
+            self.git_repo.git.commit(
+                "--amend",
+                "-m", 'Revert "{0}"'.format(commit.summary),
+                "-m", "This reverts commit {0}.".format(commit.hexsha),
+                "-m", message
+            )
