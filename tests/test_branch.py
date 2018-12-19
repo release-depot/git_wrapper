@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 """Tests for GitCommit"""
 
-from mock import patch
+from mock import Mock, patch
 
 import git
 import pytest
@@ -612,3 +612,68 @@ def test_log_diff_invalid_hash(mock_repo):
             repo.branch.log_diff('doesNotExist', '12345')
 
     assert mock_repo.iter_commits.called is False
+
+
+def test_reset(mock_repo):
+    """
+    GIVEN GitRepo is initialized with a path and repo
+    WHEN reset is called
+    THEN repo.head.reset is called
+    """
+    mock_remote = Mock()
+    mock_repo.remote.return_value = mock_remote
+
+    repo = GitRepo(repo=mock_repo)
+    with patch('git.repo.fun.name_to_object'):
+        repo.branch.hard_reset()
+
+    assert mock_remote.fetch.called is True  # Sync is called
+    assert mock_repo.head.reset.called is True  # Reset is called
+
+
+def test_reset_remote_reference_not_found(mock_repo):
+    """
+    GIVEN GitRepo is initialized with a path and repo
+    WHEN reset is called
+    AND the remote + branch reference doesn't exist
+    THEN ReferenceNotFoundException is raised
+    """
+    repo = GitRepo(repo=mock_repo)
+
+    with patch('git.repo.fun.name_to_object') as mock_name_to_object:
+        mock_name_to_object.side_effect = git.exc.BadName()
+        with pytest.raises(exceptions.ReferenceNotFoundException):
+            repo.branch.hard_reset(refresh=False, remote="doesntExist")
+
+    assert mock_repo.head.reset.called is False
+
+
+def test_reset_checkout_failure(mock_repo):
+    """
+    GIVEN GitRepo is initialized with a path and repo
+    WHEN reset is called
+    AND git.checkout fails
+    THEN CheckoutException is raised
+    """
+    mock_repo.git.checkout.side_effect = git.GitCommandError('checkout', '')
+    repo = GitRepo(repo=mock_repo)
+
+    with pytest.raises(exceptions.CheckoutException):
+        repo.branch.hard_reset(refresh=False)
+
+    assert mock_repo.head.reset.called is False
+
+
+def test_reset_reset_failure(mock_repo):
+    """
+    GIVEN GitRepo is initialized with a path and repo
+    WHEN reset is called
+    AND git.reset fails
+    THEN ResetException is raised
+    """
+    repo = GitRepo(repo=mock_repo)
+
+    with patch('git.repo.fun.name_to_object'):
+        mock_repo.head.reset.side_effect = git.GitCommandError('reset', '')
+        with pytest.raises(exceptions.ResetException):
+            repo.branch.hard_reset(refresh=False)

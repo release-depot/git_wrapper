@@ -2,6 +2,9 @@
 """This module acts as an interface for acting on git remotes"""
 
 import git
+from future.utils import raise_from
+
+from git_wrapper import exceptions
 
 
 class GitRemote(object):
@@ -46,3 +49,48 @@ class GitRemote(object):
             self.git_repo.repo.delete_remote(remote)
 
         return ret_status
+
+    def fetch(self, remote="origin"):
+        """Refresh the specified remote
+
+           :param str remote: Remote to fetch
+        """
+        try:
+            remote = self.git_repo.repo.remote(remote)
+        except ValueError:
+            msg = "Remote {remote} does not exist on repo {repo}".format(
+                remote=remote,
+                repo=self.git_repo.repo.working_dir
+            )
+            raise exceptions.ReferenceNotFoundException(msg)
+
+        try:
+            remote.fetch()
+        except git.GitCommandError as ex:
+            msg = (
+                "Could not fetch remote {remote} ({url}). "
+                "Error: {error}".format(remote=remote.name,
+                                        url=remote.url,
+                                        error=ex)
+            )
+            raise_from(exceptions.RemoteException(msg), ex)
+
+    def fetch_all(self):
+        """Refresh all the repo's remotes.
+
+           All the remotes will be fetched even if one fails ; in this case a
+           single exception containing the list of failed remotes is returned.
+        """
+        remotes = self.names()
+
+        errors = []
+        for remote in remotes:
+            try:
+                self.fetch(remote)
+            except exceptions.RemoteException:
+                self.logger.exception("Error fetching remote %s", remote)
+                errors.append(remote)
+
+        if errors:
+            msg = "Error fetching these remotes: {0}".format(", ".join(errors))
+            raise exceptions.RemoteException(msg)

@@ -1,3 +1,4 @@
+import git
 import pytest
 
 from git_wrapper import exceptions
@@ -92,3 +93,33 @@ def test_log_diff_wrong_hash(repo_root):
 
     with pytest.raises(exceptions.ReferenceNotFoundException):
         repo.branch.log_diff("123456789z", "0.1.0")
+
+
+def test_reset(repo_root):
+    repo = GitRepo(repo_root)
+    branch_name = "test_reset"
+
+    # Exercise repo refresh
+    repo.remote.fetch("origin")
+
+    # Save the current reference to origin/master
+    reset_to_commit = git.repo.fun.name_to_object(repo.repo, "origin/master")
+
+    # Create a new branch based on an old commit
+    repo.git.branch(branch_name, "0.0.1")
+
+    # Ensure branch head is different from the one we saved
+    branch_commit = repo.repo.branches[branch_name].commit
+    assert branch_commit.hexsha != reset_to_commit.hexsha
+
+    # Reset the branch to origin/master
+    repo.branch.hard_reset(
+        refresh=False,  # Avoid race condition if something new merged
+        branch=branch_name,
+        remote="origin",
+        remote_branch="master"
+    )
+
+    # Ensure the new head matches the origin/master we saved
+    branch_commit = repo.repo.branches[branch_name].commit
+    assert branch_commit.hexsha == reset_to_commit.hexsha

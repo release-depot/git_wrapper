@@ -61,3 +61,8 @@ class RepoCreationException(GitWrapperException):
 class RemoteException(GitWrapperException):
     """Error occurred while doing an operation on a remote."""
     pass
+
+
+class ResetException(GitWrapperException):
+    """Error occurred while resetting."""
+    pass
