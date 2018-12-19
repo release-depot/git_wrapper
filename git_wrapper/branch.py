@@ -254,3 +254,48 @@ class GitBranch(object):
            :param str hash_to: A commit hash
         """
         return self.log_diff(hash_from, hash_to, "$short_hash $summary")
+
+    def hard_reset(self, branch="master", remote="origin",
+                   remote_branch="master", refresh=True):
+        """Perform a hard reset of a local branch.
+
+           :param str branch: Local branch to reset
+           :param str remote: Remote use as base for the reset
+           :param str remote_branch: Remote branch to reset to
+           :param bool refresh: Whether to refresh the remote before resetting
+        """
+        if refresh:
+            self.git_repo.remote.fetch(remote)
+
+        # Switch to branch
+        try:
+            self.git_repo.git.checkout(branch)
+        except git.GitCommandError as ex:
+            msg = (
+                "Could not checkout branch {branch}. Error: {error}".format(
+                    branch=branch, error=ex)
+            )
+            raise_from(exceptions.CheckoutException(msg), ex)
+
+        # Get a reference to the commit we want to reset to
+        remote_ref = "{0}/{1}".format(remote, remote_branch)
+        try:
+            commit = git.repo.fun.name_to_object(self.git_repo.repo,
+                                                 remote_ref)
+        except git.exc.BadName as ex:
+            msg = "Could not find remote reference {0}.".format(remote_ref)
+            raise_from(exceptions.ReferenceNotFoundException(msg), ex)
+
+        # Reset --hard to that reference
+        try:
+            self.git_repo.repo.head.reset(commit=commit,
+                                          index=True,
+                                          working_tree=True)
+        except git.GitCommandError as ex:
+            msg = (
+                "Error resetting branch {branch} to {remote_ref}. "
+                "Error: {error}".format(remote_ref=remote_ref,
+                                        branch=branch,
+                                        error=ex)
+            )
+            raise_from(exceptions.ResetException(msg), ex)
