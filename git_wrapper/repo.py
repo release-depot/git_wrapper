@@ -77,18 +77,22 @@ class GitRepo(object):
         return self.repo.git
 
     @staticmethod
-    def clone(clone_from, clone_to):
+    def clone(clone_from, clone_to, bare=False):
         """Clone a repository.
 
            :param str clone_from: The url or path to clone the repo from
            :param str clone_to: The local path to clone to
-           :return git.Repo: Returns the newly created repo object
+           :param bool bare: Whether to create a bare repo
+           :return GitRepo: Returns the newly created repo object
         """
         clone_to = os.path.realpath(os.path.expanduser(clone_to))
-        logging.debug("Preparing to clone repository %s into directory %s", clone_from, clone_to)
+        logging.debug("Preparing to clone repository %s into directory %s",
+                      clone_from, clone_to)
 
         try:
-            repo = git.repo.base.Repo.clone_from(clone_from, clone_to)
+            repo = git.repo.base.Repo.clone_from(clone_from,
+                                                 clone_to,
+                                                 bare=bare)
         except git.GitCommandError as ex:
             msg = "Error cloning repository {repo}".format(repo=clone_from)
             raise_from(exceptions.RepoCreationException(msg), ex)

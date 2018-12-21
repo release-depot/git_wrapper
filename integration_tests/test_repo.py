@@ -11,7 +11,7 @@ def test_clone(clone_repo_root, clone_repo_url):
     repo_url = clone_repo_url
 
     # Create a new clone
-    clone = GitRepo.clone(repo_url, repo_root)
+    clone = GitRepo.clone(repo_url, repo_root, bare=True)
 
     # Ensure repo has expected tags, some commits
     assert hasattr(clone, "repo") is True
@@ -21,6 +21,8 @@ def test_clone(clone_repo_root, clone_repo_url):
 
     tag = clone.repo.commit("0.1.0")
     assert tag.hexsha == "2e6c014bc296be90a7ed04d155ea7d9da2240bbc"
+
+    assert clone.repo.bare is True
 
 
 def test_clone_from_filesystem(clone_repo_root, clone_repo_url, repo_root):
@@ -35,6 +37,7 @@ def test_clone_from_filesystem(clone_repo_root, clone_repo_url, repo_root):
     clone.repo.commit("f8f7abc4ce87db051f9998c5d4dd153695e35675")
     tag = clone.repo.commit("0.1.0")
     assert tag.hexsha == "2e6c014bc296be90a7ed04d155ea7d9da2240bbc"
+    assert clone.repo.bare is False
 
 
 def test_clone_failed(clone_repo_root, clone_repo_url):
