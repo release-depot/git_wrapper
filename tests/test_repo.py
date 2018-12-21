@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 """Tests for GitRepo"""
 
-from mock import Mock, patch
+from mock import Mock, patch, ANY
 import shutil
 
 import git
@@ -129,6 +129,17 @@ def test_clone():
         assert isinstance(clone, GitRepo)
 
 
+def test_bare_clone():
+    """
+    GIVEN GitRepo without a path or repo
+    WHEN clone is called with valid parameters and bare set to True
+    THEN Repo.clone_from is called with bare=True
+    """
+    with patch('git.repo.base.Repo.clone_from') as mock_clone:
+        GitRepo.clone('./', './testclone', True)
+        mock_clone.assert_called_with('./', ANY, bare=True)
+
+
 def test_clone_failed():
     """
     GIVEN GitRepo without a path or repo
@@ -157,7 +168,9 @@ def test_destroy_and_reclone(mock_repo, monkeypatch):
     with patch('git.repo.base.Repo.clone_from') as mock_clone:
         clone.destroy_and_reclone()
         assert mock_clone.called is True
-        assert mock_clone.called_with('http://example.com', local_dir)
+        mock_clone.assert_called_with('http://example.com',
+                                      local_dir,
+                                      bare=False)
 
 
 def test_destroy_no_path_no_repo(monkeypatch):
@@ -207,7 +220,9 @@ def test_destroy_no_remote_named_origin(mock_repo, monkeypatch):
     with patch('git.repo.base.Repo.clone_from') as mock_clone:
         clone.destroy_and_reclone()
         assert mock_clone.called is True
-        mock_clone.assert_called_with('http://example.com/another', local_dir)
+        mock_clone.assert_called_with('http://example.com/another',
+                                      local_dir,
+                                      bare=False)
 
 
 def test_destroy_and_multiple_remotes(mock_repo, monkeypatch):
@@ -232,7 +247,9 @@ def test_destroy_and_multiple_remotes(mock_repo, monkeypatch):
         mock_clone.return_value = new_repo_mock
         clone.destroy_and_reclone()
         assert mock_clone.called is True
-        mock_clone.assert_called_with('http://example.com', local_dir)
+        mock_clone.assert_called_with('http://example.com',
+                                      local_dir,
+                                      bare=False)
         new_repo_mock.create_remote.assert_called_with(
             "otherremote",
             "http://example.com/another"
