@@ -21,7 +21,9 @@ def mock_repo():
     remote.configure_mock(name="origin", url="http://example.com")
     remote_list = IterableList("name")
     remote_list.extend([remote])
+
     repo_mock.remotes = remote_list
+    repo_mock.branches = []
 
     return repo_mock
 

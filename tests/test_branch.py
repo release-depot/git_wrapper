@@ -658,8 +658,9 @@ def test_reset_checkout_failure(mock_repo):
     mock_repo.git.checkout.side_effect = git.GitCommandError('checkout', '')
     repo = GitRepo(repo=mock_repo)
 
-    with pytest.raises(exceptions.CheckoutException):
-        repo.branch.hard_reset(refresh=False)
+    with patch('git.repo.fun.name_to_object'):
+        with pytest.raises(exceptions.CheckoutException):
+            repo.branch.hard_reset(refresh=False)
 
     assert mock_repo.head.reset.called is False
 
@@ -743,3 +744,63 @@ def test_remote_branch_doesnt_exists(mock_repo):
     mock_repo.remotes.extend([remote])
 
     assert repo.branch.exists("testbranch", "testremote") is False
+
+
+def test_create_branch(mock_repo):
+    """
+    GIVEN GitRepo is initialized with a path and repo
+    WHEN branch.create is called with a valid name and start_ref
+    THEN git.branch is called
+    """
+    repo = GitRepo(repo=mock_repo)
+
+    with patch('git.repo.fun.name_to_object'):
+        assert repo.branch.create("test", "123456") is True
+    repo.git.branch.assert_called_with("test", "123456")
+
+
+def test_create_branch_with_bad_start_ref(mock_repo):
+    """
+    GIVEN GitRepo is initialized with a path and repo
+    WHEN branch.create is called with a valid name and invalid start_ref
+    THEN a ReferenceNotFoundException is raised
+    """
+    repo = GitRepo(repo=mock_repo)
+
+    with patch('git.repo.fun.name_to_object') as mock_name_to_object:
+        mock_name_to_object.side_effect = git.exc.BadName()
+        with pytest.raises(exceptions.ReferenceNotFoundException):
+            assert repo.branch.create("test", "badref")
+
+
+def test_create_branch_already_exists(mock_repo):
+    """
+    GIVEN GitRepo is initialized with a path and repo
+    WHEN branch.create is called with a valid name and start_ref
+    AND the branch already exists
+    THEN git.branch is not called
+    """
+    repo = GitRepo(repo=mock_repo)
+    mock_repo.branches = ["test", "master"]
+
+    with patch('git.repo.fun.name_to_object'):
+        repo.branch.create("test", "123456")
+    assert repo.git.branch.called is False
+
+
+def test_create_branch_already_exists_and_reset_it(mock_repo):
+    """
+    GIVEN GitRepo is initialized with a path and repo
+    WHEN branch.create is called with a valid name and start_ref
+    AND the branch already exists and reset_if_exists is True
+    THEN hard_reset_to_ref is called
+    """
+    repo = GitRepo(repo=mock_repo)
+    mock_repo.branches = ["test", "master"]
+
+    mock_hard_reset = Mock()
+    repo.branch.hard_reset_to_ref = mock_hard_reset
+
+    with patch('git.repo.fun.name_to_object'):
+        repo.branch.create("test", "123456", True)
+    assert mock_hard_reset.called is True
