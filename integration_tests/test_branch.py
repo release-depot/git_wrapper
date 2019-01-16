@@ -123,3 +123,27 @@ def test_reset(repo_root):
     # Ensure the new head matches the origin/master we saved
     branch_commit = repo.repo.branches[branch_name].commit
     assert branch_commit.hexsha == reset_to_commit.hexsha
+
+
+def test_create_branch(repo_root):
+    repo = GitRepo(repo_root)
+    branch_name = "test_create"
+    tag_0_0_1_hexsha = "631b3a35723a038c01669e1933571693a166db81"
+    tag_0_1_0_hexsha = "2e6c014bc296be90a7ed04d155ea7d9da2240bbc"
+
+    assert branch_name not in repo.repo.branches
+
+    # Create the new branch
+    repo.branch.create(branch_name, "0.0.1")
+    assert branch_name in repo.repo.branches
+    assert repo.repo.branches[branch_name].commit.hexsha == tag_0_0_1_hexsha
+
+    # Branch already exists - do nothing
+    repo.branch.create(branch_name, "0.1.0")
+    assert branch_name in repo.repo.branches
+    assert repo.repo.branches[branch_name].commit.hexsha == tag_0_0_1_hexsha
+
+    # Branch already exists - reset it
+    repo.branch.create(branch_name, "0.1.0", True)
+    assert branch_name in repo.repo.branches
+    assert repo.repo.branches[branch_name].commit.hexsha == tag_0_1_0_hexsha

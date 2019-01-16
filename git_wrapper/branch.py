@@ -48,6 +48,27 @@ class GitBranch(object):
                 ret_data[match.group(1)] = match.group(2)
         return ret_data
 
+    @reference_exists("start_ref")
+    def create(self, name, start_ref, reset_if_exists=False):
+        """Create a local branch based on start_ref.
+
+           If the branch exists, do nothing or hard reset it if reset_if_exists
+           is set.
+
+           :param str name: New branch's name
+           :param str start_ref: Reference (branch, commit, tag, ...) to use as
+                                 a starting point.
+           :param bool reset_if_exists: Whether to hard reset the branch to
+                                        start_ref if the branch already exists.
+        """
+        if not self.exists(name):
+            self.git_repo.git.branch(name, start_ref)
+            return True
+        if self.exists(name) and not reset_if_exists:
+            return
+        if self.exists(name) and reset_if_exists:
+            self.hard_reset_to_ref(name, start_ref)
+
     def exists(self, name, remote=None):
         """Checks if a branch exists locally or on the specified remote.
 
@@ -279,7 +300,7 @@ class GitBranch(object):
 
     def hard_reset(self, branch="master", remote="origin",
                    remote_branch="master", refresh=True):
-        """Perform a hard reset of a local branch.
+        """Perform a hard reset of a local branch to a remote branch.
 
            :param str branch: Local branch to reset
            :param str remote: Remote use as base for the reset
@@ -289,7 +310,23 @@ class GitBranch(object):
         if refresh:
             self.git_repo.remote.fetch(remote)
 
-        # Switch to branch
+        remote_ref = "{0}/{1}".format(remote, remote_branch)
+        self.hard_reset_to_ref(branch, remote_ref)
+
+    def hard_reset_to_ref(self, branch, ref):
+        """Perform a hard reset of a local branch to any reference.
+
+           :param str branch: Local branch to reset
+           :param str ref: Reference (commit, tag, ...) to reset to
+        """
+        # Ensure the reference maps to a commit
+        try:
+            commit = git.repo.fun.name_to_object(self.git_repo.repo, ref)
+        except git.exc.BadName as ex:
+            msg = "Could not find reference {0}.".format(ref)
+            raise_from(exceptions.ReferenceNotFoundException(msg), ex)
+
+        # Switch to the branch
         try:
             self.git_repo.git.checkout(branch)
         except git.GitCommandError as ex:
@@ -299,15 +336,6 @@ class GitBranch(object):
             )
             raise_from(exceptions.CheckoutException(msg), ex)
 
-        # Get a reference to the commit we want to reset to
-        remote_ref = "{0}/{1}".format(remote, remote_branch)
-        try:
-            commit = git.repo.fun.name_to_object(self.git_repo.repo,
-                                                 remote_ref)
-        except git.exc.BadName as ex:
-            msg = "Could not find remote reference {0}.".format(remote_ref)
-            raise_from(exceptions.ReferenceNotFoundException(msg), ex)
-
         # Reset --hard to that reference
         try:
             self.git_repo.repo.head.reset(commit=commit,
@@ -315,9 +343,7 @@ class GitBranch(object):
                                           working_tree=True)
         except git.GitCommandError as ex:
             msg = (
-                "Error resetting branch {branch} to {remote_ref}. "
-                "Error: {error}".format(remote_ref=remote_ref,
-                                        branch=branch,
-                                        error=ex)
+                "Error resetting branch {branch} to {ref}. "
+                "Error: {error}".format(ref=ref, branch=branch, error=ex)
             )
             raise_from(exceptions.ResetException(msg), ex)
