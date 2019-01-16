@@ -198,14 +198,14 @@ class GitBranch(object):
         """Return a list of strings for log entries between two hashes.
 
            Any of the following placeholders may be used in the pattern:
-              $hash The full commit hash
-              $short_hash The short commit hash, similar to --abbrev-commit
-              $message The commit message
-              $summary First line of the commit message
-              $full_message Complete commit info with hash, author, message
-                            Similar to default "git log" ouput
-              $author Commit author
-              $date Date the commit was authored
+             * $hash The full commit hash
+             * $short_hash The short commit hash, similar to --abbrev-commit
+             * $message The commit message
+             * $summary First line of the commit message
+             * $full_message Complete commit info with hash, author, message.
+               Similar to default "git log" ouput
+             * $author Commit author
+             * $date Date the commit was authored
 
            :param str hash_from: A commit hash
            :param str hash_to: A commit hash
