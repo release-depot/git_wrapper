@@ -48,6 +48,28 @@ class GitBranch(object):
                 ret_data[match.group(1)] = match.group(2)
         return ret_data
 
+    def exists(self, name, remote=None):
+        """Checks if a branch exists locally or on the specified remote.
+
+           :param str name: Name of the branch to find
+           :param str remote: Remote name to check for the branch, or None
+                              if local
+        """
+        if not remote:
+            if name in self.git_repo.repo.branches:
+                return True
+            else:
+                return False
+        else:
+            if remote not in self.git_repo.remote.names():
+                raise exceptions.RemoteException(
+                    "Remote {0} does not exist.".format(remote)
+                )
+            if name in self.git_repo.repo.remotes[remote].refs:
+                return True
+            else:
+                return False
+
     def cherry_on_head_only(self, upstream, head):
         """Get new patches between upstream and head.
 

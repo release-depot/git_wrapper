@@ -6,6 +6,7 @@ from datetime import datetime
 from mock import Mock
 
 import git
+from git.util import IterableList
 import pytest
 
 
@@ -18,7 +19,9 @@ def mock_repo():
 
     remote = Mock(spec=git.Remote)
     remote.configure_mock(name="origin", url="http://example.com")
-    repo_mock.remotes = [remote]
+    remote_list = IterableList("name")
+    remote_list.extend([remote])
+    repo_mock.remotes = remote_list
 
     return repo_mock
 

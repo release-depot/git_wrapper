@@ -677,3 +677,69 @@ def test_reset_reset_failure(mock_repo):
         mock_repo.head.reset.side_effect = git.GitCommandError('reset', '')
         with pytest.raises(exceptions.ResetException):
             repo.branch.hard_reset(refresh=False)
+
+
+def test_local_branch_exists(mock_repo):
+    """
+    GIVEN GitRepo is initialized with a path and repo
+    WHEN branch.exists is called with a valid branch and None remote
+    THEN True is returned
+    """
+    repo = GitRepo(repo=mock_repo)
+    mock_repo.branches = ["master", "test"]
+
+    assert repo.branch.exists("test") is True
+
+
+def test_local_branch_doesnt_exist(mock_repo):
+    """
+    GIVEN GitRepo is initialized with a path and repo
+    WHEN branch.exists is called with an invalid branch and None remote
+    THEN False is returned
+    """
+    repo = GitRepo(repo=mock_repo)
+    mock_repo.branches = ["master", "test"]
+
+    assert repo.branch.exists("another-test") is False
+
+
+def test_branch_exists_with_invalid_remote(mock_repo):
+    """
+    GIVEN GitRepo is initialized with a path and repo
+    WHEN branch.exists is called with a valid branch and invalid remote
+    THEN a RemoteException is raised
+    """
+    repo = GitRepo(repo=mock_repo)
+
+    with pytest.raises(exceptions.RemoteException):
+        assert repo.branch.exists("another", "doesntexist")
+
+
+def test_remote_branch_exists(mock_repo):
+    """
+    GIVEN GitRepo is initialized with a path and repo
+    WHEN branch.exists is called with a valid branch and valid remote
+    THEN True is returned
+    """
+    repo = GitRepo(repo=mock_repo)
+
+    remote = Mock(spec=git.Remote)
+    remote.configure_mock(name="testremote", refs=["testbranch"])
+    mock_repo.remotes.extend([remote])
+
+    assert repo.branch.exists("testbranch", "testremote") is True
+
+
+def test_remote_branch_doesnt_exists(mock_repo):
+    """
+    GIVEN GitRepo is initialized with a path and repo
+    WHEN branch.exists is called with an invalid branch and valid remote
+    THEN True is returned
+    """
+    repo = GitRepo(repo=mock_repo)
+
+    remote = Mock(spec=git.Remote)
+    remote.configure_mock(name="testremote", refs=[])
+    mock_repo.remotes.extend([remote])
+
+    assert repo.branch.exists("testbranch", "testremote") is False
