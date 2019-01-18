@@ -14,3 +14,14 @@ History
 * Base functionality
 * git cherry support
 * Removing pipenv support.
+
+0.2.0 (2019-01-18)
+------------------
+
+* Third release on PyPI.
+* Major refactor to better align the data model.
+* Added several new features
+        * Log diff generation
+        * Improved clone support including bare repos and destroy/reclone
+        * Revert support
+        * Support for rebasing to a branch or commit.
