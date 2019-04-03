@@ -12,6 +12,7 @@ from git_wrapper.branch import GitBranch
 from git_wrapper.commit import GitCommit
 from git_wrapper import exceptions
 from git_wrapper.remote import GitRemote
+from git_wrapper.tag import GitTag
 
 
 class GitRepo(object):
@@ -28,6 +29,7 @@ class GitRepo(object):
         self._branch = None
         self._commit = None
         self._remote = None
+        self._tag = None
 
         self.__setup(path, repo)
         self._setup_logger(logger)
@@ -193,3 +195,20 @@ class GitRepo(object):
         if not isinstance(new_commit, GitCommit):
             raise TypeError("Commit must be a GitCommit object.")
         self._commit = new_commit
+
+    @property
+    def tag(self):
+        """Return object to act on the repo's tags"""
+        if not self._tag:
+            self._tag = GitTag(git_repo=self, logger=self.logger)
+        return self._tag
+
+    @tag.setter
+    def tag(self, new_tag):
+        """Set up object to interact with Tags
+
+            :param git_wrapper.tag.GitTag new_tag: Pre-constructed GitTag object
+        """
+        if not isinstance(new_tag, GitTag):
+            raise TypeError("Tag must be a GitTag object.")
+        self._tag = new_tag
