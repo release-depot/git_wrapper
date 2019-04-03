@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 """Tests for GitCommit"""
 
-from mock import patch
+from mock import Mock, patch
 
 import git
 import pytest
@@ -215,3 +215,48 @@ def test_revert_with_message(mock_repo):
         repo.commit.revert('123456', "My message")
     assert repo.git.revert.called is True
     assert repo.git.commit.called is True
+
+
+def test_same(mock_repo):
+    """
+    GIVEN GitRepo initialized with a path and repo
+    WHEN commit.same is called with valid references
+    AND the references are to the same commit
+    THEN True is returned
+    """
+    repo = GitRepo('./', mock_repo)
+
+    with patch('git.repo.fun.name_to_object') as mock_name_to_object:
+        mock_name_to_object.return_value = Mock(hexsha='abcd1')
+        assert repo.commit.same('a_tag', 'a_commit') is True
+
+
+def test_not_same(mock_repo):
+    """
+    GIVEN GitRepo initialized with a path and repo
+    WHEN commit.same is called with valid references
+    AND the references are not to the same commit
+    THEN False is returned
+    """
+    repo = GitRepo('./', mock_repo)
+
+    with patch('git.repo.fun.name_to_object') as mock_name_to_object:
+        mock_name_to_object.side_effect = [Mock(hexsha='abcd1'),
+                                           Mock(hexsha='zzzz2'),
+                                           Mock(hexsha='abcd1'),
+                                           Mock(hexsha='zzzz2')]
+        assert repo.commit.same('a_tag', 'a_commit') is False
+
+
+def test_same_with_invalid_ref(mock_repo):
+    """
+    GIVEN GitRepo initialized with a path and repo
+    WHEN commit.same is called with an invalid reference
+    THEN a ReferenceNotFoundException is raised
+    """
+    repo = GitRepo('./', mock_repo)
+
+    with patch('git.repo.fun.name_to_object') as mock_name_to_object:
+        mock_name_to_object.side_effect = git.exc.BadName()
+        with pytest.raises(exceptions.ReferenceNotFoundException):
+            repo.commit.same('bad_ref', 'a_tag')

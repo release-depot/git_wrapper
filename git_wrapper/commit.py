@@ -88,3 +88,21 @@ class GitCommit(object):
                 "-m", "This reverts commit {0}.".format(commit.hexsha),
                 "-m", message
             )
+
+    @reference_exists('reference_B')
+    @reference_exists('reference_A')
+    def same(self, reference_A, reference_B):
+        """Determine whether two references refer to the same commit.
+
+            :param str reference_A: A commit ref (sha, tag, branch name, ...)
+            :param str reference_B: A commit ref (sha, tag, branch name, ...)
+            :return bool: True if the references point to the same commit,
+                          False if not
+        """
+        commitA = git.repo.fun.name_to_object(self.git_repo.repo, reference_A)
+        commitB = git.repo.fun.name_to_object(self.git_repo.repo, reference_B)
+
+        if commitA.hexsha == commitB.hexsha:
+            return True
+        else:
+            return False

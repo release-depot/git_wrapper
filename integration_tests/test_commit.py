@@ -35,3 +35,10 @@ def test_revert_with_message(repo_root):
     assert "Revert" in message
     assert "This reverts commit bf5887" in message
     assert "An explanation for the revert" in message
+
+
+def test_same(repo_root):
+    repo = GitRepo(repo_root)
+
+    assert repo.commit.same("0.0.1", "631b3a3") is True
+    assert repo.commit.same("0.0.1", "00fed08") is False
