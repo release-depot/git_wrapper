@@ -66,3 +66,13 @@ class RemoteException(GitWrapperException):
 class ResetException(GitWrapperException):
     """Error occurred while resetting."""
     pass
+
+
+class TaggingException(GitWrapperException):
+    """Error occurred while performing operation on tag."""
+    pass
+
+
+class PushException(GitWrapperException):
+    """Error occurred while pushing to remote."""
+    pass

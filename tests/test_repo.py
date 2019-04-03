@@ -12,6 +12,7 @@ from git_wrapper.branch import GitBranch
 from git_wrapper.commit import GitCommit
 from git_wrapper.remote import GitRemote
 from git_wrapper.repo import GitRepo
+from git_wrapper.tag import GitTag
 
 
 def test_repo(mock_repo):
@@ -115,6 +116,29 @@ def test_commit_setter_wrong_type(mock_repo):
     repo = GitRepo('./', mock_repo)
     with pytest.raises(TypeError):
         repo.commit = repo
+
+
+def test_tag_setter(mock_repo):
+    """
+    GIVEN GitRepo is initialized with a path and repo
+    WHEN the tag setter is called
+    THEN the tag is set as expected
+    """
+    repo = GitRepo('./', mock_repo)
+    new_tag = GitTag(git_repo=repo, logger=None)
+    repo.tag = new_tag
+    assert repo.tag == new_tag
+
+
+def test_tag_setter_wrong_type(mock_repo):
+    """
+    GIVEN GitRepo is initialized with a path and repo
+    WHEN the tag setter is called with the wrong type
+    THEN a TypeError is raised
+    """
+    repo = GitRepo('./', mock_repo)
+    with pytest.raises(TypeError):
+        repo.tag = repo
 
 
 def test_clone():
