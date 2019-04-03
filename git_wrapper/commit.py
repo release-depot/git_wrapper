@@ -19,6 +19,7 @@ class GitCommit(object):
         self.git_repo = git_repo
         self.logger = logger
 
+    @reference_exists('sha')
     def describe(self, sha):
         """Return tag and commit info for a given sha
 
