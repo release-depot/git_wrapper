@@ -1,4 +1,14 @@
+import pytest
+
+from git_wrapper import exceptions
 from git_wrapper.repo import GitRepo
+
+
+def test_describe(repo_root):
+    repo = GitRepo(repo_root)
+
+    with pytest.raises(exceptions.ReferenceNotFoundException):
+        repo.commit.describe("doesntExist")
 
 
 def test_revert(repo_root):

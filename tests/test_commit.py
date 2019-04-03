@@ -22,7 +22,8 @@ def test_describe_tag_and_patch(mock_repo):
 
     repo = GitRepo('./', mock_repo)
 
-    assert expected == repo.commit.describe('12345')
+    with patch('git.repo.fun.name_to_object'):
+        assert expected == repo.commit.describe('12345')
 
 
 def test_describe_tag_only(mock_repo):
@@ -37,7 +38,8 @@ def test_describe_tag_only(mock_repo):
 
     repo = GitRepo('./', mock_repo)
 
-    assert expected == repo.commit.describe('12345')
+    with patch('git.repo.fun.name_to_object'):
+        assert expected == repo.commit.describe('12345')
 
 
 def test_describe_empty(mock_repo):
@@ -52,7 +54,8 @@ def test_describe_empty(mock_repo):
 
     repo = GitRepo('./', mock_repo)
 
-    assert expected == repo.commit.describe('12345')
+    with patch('git.repo.fun.name_to_object'):
+        assert expected == repo.commit.describe('12345')
 
 
 def test_describe_sha_doesnt_exist(mock_repo):
@@ -62,10 +65,25 @@ def test_describe_sha_doesnt_exist(mock_repo):
     THEN a ReferenceNotFoundException is raised
     """
     repo = GitRepo('./', mock_repo)
+
+    with patch('git.repo.fun.name_to_object') as mock_name_to_object:
+        mock_name_to_object.side_effect = git.exc.BadName()
+        with pytest.raises(exceptions.ReferenceNotFoundException):
+            repo.commit.describe('doesntexist')
+
+
+def test_describe_sha_with_describe_failure(mock_repo):
+    """
+    GIVEN GitRepo initialized with a path and repo
+    WHEN git.describe fails
+    THEN a DescribeException is raised
+    """
+    repo = GitRepo('./', mock_repo)
     repo.git.describe.side_effect = git.CommandError('describe')
 
-    with pytest.raises(exceptions.DescribeException):
-        repo.commit.describe('12345')
+    with patch('git.repo.fun.name_to_object'):
+        with pytest.raises(exceptions.DescribeException):
+            repo.commit.describe('12345')
 
 
 def test_describe_with_lightweight_tags(mock_repo):
@@ -81,7 +99,8 @@ def test_describe_with_lightweight_tags(mock_repo):
 
     repo = GitRepo('./', mock_repo)
 
-    assert expected == repo.commit.describe('12345')
+    with patch('git.repo.fun.name_to_object'):
+        assert expected == repo.commit.describe('12345')
 
 
 def test_commit(mock_repo):
