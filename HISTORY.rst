@@ -25,3 +25,11 @@ History
         * Improved clone support including bare repos and destroy/reclone
         * Revert support
         * Support for rebasing to a branch or commit.
+
+0.2.1 (2019-04-15)
+------------------
+
+* Fourth release on PyPI.
+* Added several new features
+        * Add function to compare commit references
+        * Add tagging functions
