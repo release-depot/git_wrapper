@@ -804,3 +804,68 @@ def test_create_branch_already_exists_and_reset_it(mock_repo):
     with patch('git.repo.fun.name_to_object'):
         repo.branch.create("test", "123456", True)
     assert mock_hard_reset.called is True
+
+
+def test_remote_contains_branch_not_found(mock_repo):
+    """
+    GIVEN GitRepo initialized with a path and repo
+    WHEN branch.remote_contains is called with an invalid branch name
+    THEN a ReferenceNotFoundException is raised
+    AND the exception message contains branch
+    """
+    repo = GitRepo(repo=mock_repo)
+
+    with patch('git.repo.fun.name_to_object') as mock_name_to_object:
+        with pytest.raises(exceptions.ReferenceNotFoundException) as exc_info:
+            mock_name_to_object.side_effect = git.exc.BadName()
+            repo.branch.remote_contains('doesNotExist', '12345')
+    assert 'branch' in str(exc_info.value)
+
+
+def test_remote_contains_commit_not_found(mock_repo):
+    """
+    GIVEN GitRepo initialized with a path and repo
+    WHEN branch.remote_contains is called with an invalid commit hash
+    THEN a ReferenceNotFoundException is raised
+    AND the exception message contains hash
+    """
+    repo = GitRepo(repo=mock_repo)
+
+    with patch('git.repo.fun.name_to_object') as mock_name_to_object:
+        with pytest.raises(exceptions.ReferenceNotFoundException) as exc_info:
+            # First name_to_object call is to check the branch, let it succeed
+            def side_effect(mock, ref):
+                if ref != "origin/mybranch":
+                    raise git.exc.BadName
+            mock_name_to_object.side_effect = side_effect
+            repo.branch.remote_contains('origin/mybranch', 'doesNotExist')
+    assert 'hash' in str(exc_info.value)
+
+
+def test_remote_contains_with_commit_present(mock_repo):
+    """
+    GIVEN GitRepo is initialized with a path and repo
+    WHEN branch.remote_contains is called with a valid branch and hash
+    AND git_repo.git.branch returns data
+    THEN branch.remote_contains returns True
+    """
+    remote_branch = "origin/mybranch"
+    mock_repo.git.branch.return_value = remote_branch
+    repo = GitRepo(repo=mock_repo)
+
+    with patch('git.repo.fun.name_to_object'):
+        assert repo.branch.remote_contains(remote_branch, '12345') is True
+
+
+def test_remote_contains_with_commit_absent(mock_repo):
+    """
+    GIVEN GitRepo is initialized with a path and repo
+    WHEN branch.remote_contains is called with a valid branch and hash
+    AND git_repo.git.branch returns empty string
+    THEN branch.remote_contains returns True
+    """
+    mock_repo.git.branch.return_value = ""
+    repo = GitRepo(repo=mock_repo)
+
+    with patch('git.repo.fun.name_to_object'):
+        assert repo.branch.remote_contains("origin/mybranch", '12345') is False

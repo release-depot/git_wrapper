@@ -347,3 +347,22 @@ class GitBranch(object):
                 "Error: {error}".format(ref=ref, branch=branch, error=ex)
             )
             raise_from(exceptions.ResetException(msg), ex)
+
+    @reference_exists('remote_branch')
+    @reference_exists('hash_')
+    def remote_contains(self, remote_branch, hash_):
+        """Check if a commit hash is present on a remote branch
+
+           :param str remote_branch: Remote branch to check
+           :param str hash_: Commit hash to check if present
+        """
+        # When used with a specific branch name, this command will
+        # return either an empty string if the commit isn't present, or
+        # the branch name provided
+        result = self.git_repo.git.branch(
+            "-r", "--contains", hash_, remote_branch
+        )
+        if result:
+            return True
+        else:
+            return False
