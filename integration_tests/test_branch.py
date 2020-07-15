@@ -147,3 +147,23 @@ def test_create_branch(repo_root):
     repo.branch.create(branch_name, "0.1.0", True)
     assert branch_name in repo.repo.branches
     assert repo.repo.branches[branch_name].commit.hexsha == tag_0_1_0_hexsha
+
+
+def test_remote_contains(repo_root, patch_cleanup, datadir):
+    repo = GitRepo(repo_root)
+    remote_branch = "origin/master"
+
+    # 1. Check a known commit
+    assert repo.branch.remote_contains(
+        remote_branch, "fc88bcb3158187ba9566dad896e3c688d8bc5109"
+    ) is True
+
+    # 2. Confirm new commit doesn't exist on the remote
+    test_branch = "test_contains"
+    patch_path = (datadir / "test.patch")
+    repo.git.branch(test_branch, "0.1.0")  # For patch to apply cleanly
+    repo.branch.apply_patch(test_branch, patch_path)
+
+    assert repo.branch.remote_contains(
+        remote_branch, repo.repo.head.object.hexsha
+    ) is False
