@@ -33,3 +33,9 @@ History
 * Added several new features
         * Add function to compare commit references
         * Add tagging functions
+
+0.2.2 (2020-07-20)
+------------------
+
+* Fifth release on PyPI.
+* Added new function to check if a commit exists on a given remote branch
