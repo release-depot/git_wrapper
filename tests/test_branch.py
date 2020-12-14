@@ -680,6 +680,77 @@ def test_reset_reset_failure(mock_repo):
             repo.branch.hard_reset(refresh=False)
 
 
+def test_reset_to_ref_with_checkout(mock_repo):
+    """
+    GIVEN GitRepo is initialized with a path and repo
+    WHEN reset is called with checkout
+    THEN repo.head.reset is called
+    AND repo.checkout is called once
+    """
+    repo = GitRepo(repo=mock_repo)
+    with patch('git.repo.fun.name_to_object'):
+        repo.branch.hard_reset_to_ref("main", "origin/main", checkout=True)
+
+    assert mock_repo.head.reset.called is True
+    assert mock_repo.git.checkout.call_count == 1
+
+
+def test_reset_to_ref_detached_head_with_checkout(mock_repo, monkeypatch):
+    """
+    GIVEN GitRepo is initialized with a path and repo
+    WHEN reset is called with checkout
+    AND the current HEAD is detached
+    THEN repo.head.reset is called
+    AND repo.checkout is called once
+    """
+    class MockRef:
+        @property
+        def name(self):
+            # Detached heads don't have a name
+            raise TypeError
+
+    repo = GitRepo(repo=mock_repo)
+    with patch('git.repo.fun.name_to_object'):
+        mock_repo.head.ref = MockRef()
+        repo.branch.hard_reset_to_ref("main", "origin/main", checkout=True)
+
+    assert mock_repo.head.reset.called is True
+    assert mock_repo.git.checkout.call_count == 1
+
+
+def test_reset_to_ref_without_checkout(mock_repo):
+    """
+    GIVEN GitRepo is initialized with a path and repo
+    WHEN reset_to_ref is called with checkout False
+    THEN repo.head.reset is called
+    AND repo.checkout is called twice to return to the original state
+    """
+    repo = GitRepo(repo=mock_repo)
+    with patch('git.repo.fun.name_to_object'):
+        repo.branch.hard_reset_to_ref("main", "origin/main", checkout=False)
+
+    assert mock_repo.head.reset.called is True
+    assert mock_repo.git.checkout.call_count == 2
+
+
+def test_reset_to_ref_without_checkout_fails(mock_repo):
+    """
+    GIVEN GitRepo is initialized with a path and repo
+    WHEN reset_to_ref is called with checkout False
+    AND switching back fails
+    THEN checkoutException is raised
+    """
+    mock_repo.git.checkout.side_effect = [None, git.GitCommandError('checkout', '')]
+
+    repo = GitRepo(repo=mock_repo)
+    with patch('git.repo.fun.name_to_object'):
+        with pytest.raises(exceptions.CheckoutException):
+            repo.branch.hard_reset_to_ref("main", "origin/main", checkout=False)
+
+    assert mock_repo.head.reset.called is True
+    assert mock_repo.git.checkout.call_count == 2
+
+
 def test_local_branch_exists(mock_repo):
     """
     GIVEN GitRepo is initialized with a path and repo
@@ -751,12 +822,29 @@ def test_create_branch(mock_repo):
     GIVEN GitRepo is initialized with a path and repo
     WHEN branch.create is called with a valid name and start_ref
     THEN git.branch is called
+    AND git.checkout is not called
     """
     repo = GitRepo(repo=mock_repo)
 
     with patch('git.repo.fun.name_to_object'):
         assert repo.branch.create("test", "123456") is True
     repo.git.branch.assert_called_with("test", "123456")
+    repo.git.checkout.assert_not_called()
+
+
+def test_create_and_checkout_branch(mock_repo):
+    """
+    GIVEN GitRepo is initialized with a path and repo
+    WHEN branch.create is called with valid parameters and checkout is True
+    THEN git.branch is called
+    AND git.checkout is called
+    """
+    repo = GitRepo(repo=mock_repo)
+
+    with patch('git.repo.fun.name_to_object'):
+        assert repo.branch.create("test", "123456", checkout=True) is True
+    repo.git.branch.assert_called_with("test", "123456")
+    repo.git.checkout.assert_called()
 
 
 def test_create_branch_with_bad_start_ref(mock_repo):
@@ -786,6 +874,24 @@ def test_create_branch_already_exists(mock_repo):
     with patch('git.repo.fun.name_to_object'):
         repo.branch.create("test", "123456")
     assert repo.git.branch.called is False
+    assert repo.git.checkout.called is False
+
+
+def test_create_branch_already_exists_and_check_it_out(mock_repo):
+    """
+    GIVEN GitRepo is initialized with a path and repo
+    WHEN branch.create is called with valid params and checkout is True
+    AND the branch already exists
+    THEN git.branch is not called
+    AND git.checkout is called
+    """
+    repo = GitRepo(repo=mock_repo)
+    mock_repo.branches = ["test", "master"]
+
+    with patch('git.repo.fun.name_to_object'):
+        repo.branch.create("test", "123456", checkout=True)
+    assert repo.git.branch.called is False
+    assert repo.git.checkout.called is True
 
 
 def test_create_branch_already_exists_and_reset_it(mock_repo):
