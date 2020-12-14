@@ -149,6 +149,28 @@ def test_create_branch(repo_root):
     assert repo.repo.branches[branch_name].commit.hexsha == tag_0_1_0_hexsha
 
 
+def test_create_and_checkout_branch(repo_root):
+    repo = GitRepo(repo_root)
+    branch_name = "test_create"
+
+    assert repo.repo.active_branch.name == 'master'
+
+    # Create and check out the new branch
+    repo.branch.create(branch_name, "0.0.1", checkout=True)
+    assert repo.repo.active_branch.name == branch_name
+
+    repo.repo.heads.master.checkout()
+    assert repo.repo.active_branch.name == 'master'
+
+    # Branch already exists - reset it and don't check it out
+    repo.branch.create(branch_name, "0.1.0", True, checkout=False)
+    assert repo.repo.active_branch.name == 'master'
+
+    # Branch already exists - reset it and check it out
+    repo.branch.create(branch_name, "0.0.1", True, checkout=True)
+    assert repo.repo.active_branch.name == branch_name
+
+
 def test_remote_contains(repo_root, patch_cleanup, datadir):
     repo = GitRepo(repo_root)
     remote_branch = "origin/master"

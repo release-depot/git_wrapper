@@ -49,7 +49,7 @@ class GitBranch(object):
         return ret_data
 
     @reference_exists("start_ref")
-    def create(self, name, start_ref, reset_if_exists=False):
+    def create(self, name, start_ref, reset_if_exists=False, checkout=False):
         """Create a local branch based on start_ref.
 
            If the branch exists, do nothing or hard reset it if reset_if_exists
@@ -60,14 +60,20 @@ class GitBranch(object):
                                  a starting point.
            :param bool reset_if_exists: Whether to hard reset the branch to
                                         start_ref if the branch already exists.
+           :param bool checkout: Whether to checkout the new branch
+           :return: True if a new branch was created, None otherwise
         """
         if not self.exists(name):
             self.git_repo.git.branch(name, start_ref)
+            if checkout:
+                self.git_repo.git.checkout(name)
             return True
-        if self.exists(name) and not reset_if_exists:
-            return
+
         if self.exists(name) and reset_if_exists:
-            self.hard_reset_to_ref(name, start_ref)
+            self.hard_reset_to_ref(name, start_ref, checkout)
+
+        if checkout:
+            self.git_repo.git.checkout(name)
 
     def exists(self, name, remote=None):
         """Checks if a branch exists locally or on the specified remote.
@@ -313,11 +319,12 @@ class GitBranch(object):
         remote_ref = "{0}/{1}".format(remote, remote_branch)
         self.hard_reset_to_ref(branch, remote_ref)
 
-    def hard_reset_to_ref(self, branch, ref):
+    def hard_reset_to_ref(self, branch, ref, checkout=True):
         """Perform a hard reset of a local branch to any reference.
 
            :param str branch: Local branch to reset
            :param str ref: Reference (commit, tag, ...) to reset to
+           :param bool checkout: Whether to checkout the new branch
         """
         # Ensure the reference maps to a commit
         try:
@@ -325,6 +332,13 @@ class GitBranch(object):
         except git.exc.BadName as ex:
             msg = "Could not find reference {0}.".format(ref)
             raise_from(exceptions.ReferenceNotFoundException(msg), ex)
+
+        try:
+            # Preserve the reference name if there is one
+            orig = self.git_repo.repo.head.ref.name
+        except TypeError:
+            # Detached head
+            orig = self.git_repo.repo.head.commit.hexsha
 
         # Switch to the branch
         try:
@@ -347,6 +361,17 @@ class GitBranch(object):
                 "Error: {error}".format(ref=ref, branch=branch, error=ex)
             )
             raise_from(exceptions.ResetException(msg), ex)
+
+        # Return to the original head if required
+        if not checkout:
+            try:
+                self.git_repo.git.checkout(orig)
+            except git.GitCommandError as ex:
+                msg = (
+                    "Could not checkout {orig}. Error: {error}".format(
+                        orig=orig, error=ex)
+                )
+                raise_from(exceptions.CheckoutException(msg), ex)
 
     @reference_exists('remote_branch')
     @reference_exists('hash_')
