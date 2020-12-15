@@ -39,3 +39,8 @@ History
 
 * Fifth release on PyPI.
 * Added new function to check if a commit exists on a given remote branch
+
+0.2.3 (2020-12-15)
+------------------
+
+* Added checkout parameter to branch creation and hard reset functions
