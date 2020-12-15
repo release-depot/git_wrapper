@@ -75,15 +75,15 @@ will not be accepted.
 Pushing a new release
 *********************
 
- 1. Prepare a patch to update the version number (`example`_)
- 2. Once that's merged, tag that patch and push the new tag to the repo
- 3. Run the following commands::
+1. Prepare a patch to update the version number (`example`_)
+2. Once that's merged, tag that patch and push the new tag to the repo
+3. Run the following commands::
 
     $ rm dist/*
     $ python setup.py sdist bdist_wheel
     $ twine upload --verbose dist/*
 
-  (You need to have a PyPI account with the right permissions for that last step.)
+(You need to have a PyPI account with the right permissions for that last step.)
 
 .. _example: https://github.com/release-depot/git_wrapper/commit/fc88bcb3158187ba9566dad896e3c688d8bc5109
 
