@@ -106,3 +106,40 @@ class GitCommit(object):
             return True
         else:
             return False
+
+    @reference_exists('branch_name')
+    @reference_exists('sha')
+    def cherrypick(self, sha, branch_name):
+        """Apply given sha on given branch
+
+           :param str sha: The SHA1 of the commit to cherry-pick
+           :param str branch_name: The branch to apply it to
+        """
+        if self.git_repo.repo.is_dirty():
+            msg = ("Repository {0} is dirty. Please clean workspace "
+                   "before proceeding.".format(self.git_repo.repo.working_dir))
+            raise exceptions.DirtyRepositoryException(msg)
+
+        # Checkout
+        try:
+            self.git_repo.git.checkout(branch_name)
+        except git.GitCommandError as ex:
+            msg = "Could not checkout branch {name}. Error: {error}".format(name=branch_name, error=ex)
+            raise_from(exceptions.CheckoutException(msg), ex)
+
+        # Cherry-pick
+        try:
+            self.git_repo.git.cherry_pick(sha)
+        except git.GitCommandError as ex:
+            msg = "Could not cherry-pick commit {sha} on {name}. Error: {error}".format(name=branch_name, sha=sha, error=ex)
+            raise_from(exceptions.ChangeNotAppliedException(msg), ex)
+
+        self.logger.debug("Successfully cherry-picked commit %s on %s", sha, branch_name)
+
+    def abort_cherrypick(self):
+        """Aborts a cherrypick."""
+        try:
+            self.git_repo.git.cherry_pick('--abort')
+        except git.GitCommandError as ex:
+            msg = "Cherrypick abort command failed. Error: {0}".format(ex)
+            raise_from(exceptions.AbortException(msg), ex)

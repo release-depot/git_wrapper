@@ -260,3 +260,93 @@ def test_same_with_invalid_ref(mock_repo):
         mock_name_to_object.side_effect = git.exc.BadName()
         with pytest.raises(exceptions.ReferenceNotFoundException):
             repo.commit.same('bad_ref', 'a_tag')
+
+
+def test_cherrypick(mock_repo):
+    """
+    GIVEN GitRepo initialized with a path and repo
+    WHEN commit.cherrypick_to_hash is called with a valid branch name and a valid hash
+    THEN git.checkout is called
+    AND git.cherrypick is called
+    """
+    mock_repo.is_dirty.return_value = False
+    repo = GitRepo('./', mock_repo)
+
+    with patch('git.repo.fun.name_to_object'):
+        repo.commit.cherrypick('12345', 'test')
+
+    assert repo.repo.git.checkout.called is True
+    assert repo.repo.git.cherry_pick.called is True
+
+
+def test_cherrypick_dirty_repo(mock_repo):
+    """
+    GIVEN GitRepo initialized with a path and repo
+    WHEN commit.cherrypick is called on a dirty repository
+    THEN a DirtyRepositoryException is raised
+    """
+    mock_repo.is_dirty.return_value = True
+    repo = GitRepo('./', mock_repo)
+
+    with patch('git.repo.fun.name_to_object'):
+        with pytest.raises(exceptions.DirtyRepositoryException):
+            repo.commit.cherrypick('12345', 'test')
+    assert mock_repo.is_dirty.called is True
+
+
+def test_cherrypick_error_during_checkout(mock_repo):
+    """
+    GIVEN GitRepo initialized with a path and repo
+    WHEN commit.cherrypick_to_hash is called with a valid branch name and a valid hash
+    AND checkout fails with an exception
+    THEN a CheckoutException is raised
+    """
+    mock_repo.is_dirty.return_value = False
+    mock_repo.git.checkout.side_effect = git.GitCommandError('checkout', '')
+    repo = GitRepo('./', mock_repo)
+
+    with patch('git.repo.fun.name_to_object'):
+        with pytest.raises(exceptions.CheckoutException):
+            repo.commit.cherrypick('12345', 'test')
+
+
+def test_cherrypick_error_during_cherrypick(mock_repo):
+    """
+    GIVEN GitRepo initialized with a path and repo
+    WHEN commit.cherrypick_to_hash is called with a valid branch name and a valid hash
+    AND cherry_pick fails with an exception
+    THEN a ChangeNotAppliedException is raised
+    """
+    mock_repo.is_dirty.return_value = False
+    mock_repo.git.cherry_pick.side_effect = git.GitCommandError('cherrypick', '')
+    repo = GitRepo('./', mock_repo)
+
+    with patch('git.repo.fun.name_to_object'):
+        with pytest.raises(exceptions.ChangeNotAppliedException):
+            repo.commit.cherrypick('12345', 'test')
+
+
+def test_abort_cherrypick(mock_repo):
+    """
+    GIVEN GitRepo initialized with a path and repo
+    WHEN commit.abort_cherrypick is called
+    THEN git.cherrypick is called
+    """
+    repo = GitRepo('./', mock_repo)
+
+    repo.commit.abort_cherrypick()
+    assert repo.repo.git.cherry_pick.called is True
+
+
+def test_abort_cherrypick_error(mock_repo):
+    """
+    GIVEN GitRepo initialized with a path and repo
+    WHEN commit.abort_cherrypick is called
+    AND the abort fails with an exception
+    THEN an AbortException is raised
+    """
+    mock_repo.git.cherry_pick.side_effect = git.GitCommandError('cherrypick', '')
+    repo = GitRepo('./', mock_repo)
+
+    with pytest.raises(exceptions.AbortException):
+        repo.commit.abort_cherrypick()
