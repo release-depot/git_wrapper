@@ -44,7 +44,7 @@ class CommitMessageMissingException(GitWrapperException):
 
 
 class ChangeNotAppliedException(GitWrapperException):
-    """Error occurred while applying a patch or diff onto a repo."""
+    """Error occurred while applying a changeset onto a repo."""
     pass
 
 
