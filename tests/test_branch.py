@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 """Tests for GitCommit"""
 
-from mock import Mock, patch
+from mock import ANY, Mock, patch
 
 import git
 import pytest
@@ -251,13 +251,31 @@ def test_apply_patch(mock_repo):
     """
     GIVEN GitRepo initialized with a path and repo
     WHEN apply_patch is called with a valid branch_name and valid path
-    THEN git.am is called
+    THEN git.am is called with only one argument (path) and no options
     """
     repo = GitRepo('./', mock_repo)
 
     with patch('git.repo.fun.name_to_object'):
         repo.branch.apply_patch('test_branch', './requirements.txt')
     assert repo.git.am.called is True
+    # The path gets translated to a full path which will change on every
+    # system so we only check there was one argument only, with no other flags
+    repo.git.am.assert_called_with(ANY)
+
+
+def test_apply_patch_with_brackets_preserved(mock_repo):
+    """
+    GIVEN GitRepo initialized with a path and repo
+    WHEN apply_patch is called with valid parameters
+    AND keep_square_brackets is set to True
+    THEN git.am is called with the --keep-non-patch option
+    """
+    repo = GitRepo('./', mock_repo)
+
+    with patch('git.repo.fun.name_to_object'):
+        repo.branch.apply_patch('test_branch', './requirements.txt', keep_square_brackets=True)
+    assert repo.git.am.called is True
+    repo.git.am.assert_called_with('--keep-non-patch', ANY)
 
 
 def test_apply_patch_wrong_branch_name(mock_repo):
