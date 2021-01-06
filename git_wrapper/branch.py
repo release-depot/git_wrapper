@@ -160,11 +160,12 @@ class GitBranch(object):
             raise_from(exceptions.AbortException(msg), ex)
 
     @reference_exists('branch_name')
-    def apply_patch(self, branch_name, path):
+    def apply_patch(self, branch_name, path, keep_square_brackets=False):
         """Apply a git patch file on top of the specified branch.
 
            :param str branch_name: The name of the branch or reference to apply the patch to
            :param str path: Path to a git-formatted patch file (cf. git format-patch)
+           :param bool keep_square_brackets: Preserve non-[PATCH] brackets in commit subject
         """
         # Expand file (also needed for git-am) and check it exists
         full_path = self._expand_file_path(path)
@@ -178,7 +179,10 @@ class GitBranch(object):
 
         # Apply the patch file
         try:
-            self.git_repo.git.am(full_path)
+            if keep_square_brackets:
+                self.git_repo.git.am("--keep-non-patch", full_path)
+            else:
+                self.git_repo.git.am(full_path)
         except git.GitCommandError as ex:
             msg = "Could not apply patch {path} on branch {name}. Error: {error}".format(path=full_path, name=branch_name, error=ex)
             raise_from(exceptions.ChangeNotAppliedException(msg), ex)
