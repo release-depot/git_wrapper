@@ -11,6 +11,7 @@ from future.utils import raise_from
 from git_wrapper.branch import GitBranch
 from git_wrapper.commit import GitCommit
 from git_wrapper import exceptions
+from git_wrapper.log import GitLog
 from git_wrapper.remote import GitRemote
 from git_wrapper.tag import GitTag
 
@@ -28,6 +29,7 @@ class GitRepo(object):
         self.__repo = None  # Added to clear pylint warnings
         self._branch = None
         self._commit = None
+        self._log = None
         self._remote = None
         self._tag = None
 
@@ -212,3 +214,20 @@ class GitRepo(object):
         if not isinstance(new_tag, GitTag):
             raise TypeError("Tag must be a GitTag object.")
         self._tag = new_tag
+
+    @property
+    def log(self):
+        """Return object to act on the repo's logs"""
+        if not self._log:
+            self._log = GitLog(git_repo=self, logger=self.logger)
+        return self._log
+
+    @log.setter
+    def log(self, new_log):
+        """Set up object to interact with Logs
+
+            :param git_wrapper.log.GitLog new_log: Pre-constructed GitLog object
+        """
+        if not isinstance(new_log, GitLog):
+            raise TypeError("Log must be a GitLog object.")
+        self._log = new_log
