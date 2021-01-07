@@ -99,3 +99,64 @@ def test_log_diff_invalid_hash(mock_repo):
             repo.branch.log_diff('doesNotExist', '12345')
 
     assert mock_repo.iter_commits.called is False
+
+
+def test_log_grep(mock_repo):
+    """
+    GIVEN GitRepo is initialized with a path and repo
+    WHEN log.log_grep_for_commits is called with valid parameters
+    THEN a list of commits is returned
+    """
+    mock_repo.git.log.return_value = "commit1\ncommit2\ncommit3"
+    repo = GitRepo(repo=mock_repo)
+
+    with patch('git.repo.fun.name_to_object'):
+        results = repo.log.grep_for_commits("test_branch", 'test')
+
+    assert results == ["commit1", "commit2", "commit3"]
+
+
+def test_log_grep_no_commits(mock_repo):
+    """
+    GIVEN GitRepo is initialized with a path and repo
+    WHEN log.log_grep_for_commits is called with valid parameters
+    AND git.log only returns a breakline
+    THEN an empty list is returned
+    """
+    mock_repo.git.log.return_value = ""
+    repo = GitRepo(repo=mock_repo)
+
+    with patch('git.repo.fun.name_to_object'):
+        results = repo.log.grep_for_commits("test_branch", 'test')
+
+    assert results == []
+
+
+def test_log_grep_with_path(mock_repo):
+    """
+    GIVEN GitRepo is initialized with a path and repo
+    WHEN log.log_grep_for_commits is called with a valid path
+    THEN a list of commits is returned
+    """
+    mock_repo.git.log.return_value = "commit1"
+    mock_repo.tree.return_value = ['testpath', 'test2']
+    repo = GitRepo(repo=mock_repo)
+
+    with patch('git.repo.fun.name_to_object'):
+        results = repo.log.grep_for_commits("test_branch", 'test', True, 'testpath')
+
+    assert results == ["commit1"]
+
+
+def test_log_grep_bad_path(mock_repo):
+    """
+    GIVEN GitRepo is initialized with a path and repo
+    WHEN log.log_grep_for_commits is called with an invalid path
+    THEN a FileDoesntExist exception is raised
+    """
+    mock_repo.tree.return_value = ['testpath', 'testpath2']
+    repo = GitRepo(repo=mock_repo)
+
+    with patch('git.repo.fun.name_to_object'):
+        with pytest.raises(exceptions.FileDoesntExistException):
+            repo.log.grep_for_commits("test_branch", 'test', True, 'wrongpath')

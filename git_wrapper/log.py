@@ -3,6 +3,7 @@
 
 from string import Template
 
+from git_wrapper import exceptions
 from git_wrapper.utils.decorators import reference_exists
 
 
@@ -79,3 +80,30 @@ class GitLog(object):
            :param str hash_to: A commit hash
         """
         return self.log_diff(hash_from, hash_to, "$short_hash $summary")
+
+    @reference_exists('branch')
+    def grep_for_commits(self, branch, grep_for, reverse=False, path=None):
+        """Returns a list of matching commits shas.
+           :param str branch: which branch to grep on
+           :param str grep_for: what to grep for
+           :param bool reverse: whether to return in reversed order
+           :param str path: path to limit the search to, optionally
+           :return: A list of commit ids
+        """
+        commits = []
+
+        params = [branch, "--format=format:%H", "--grep=%s" % grep_for]
+        if reverse:
+            params += ['--reverse']
+        if path:
+            if path not in self.git_repo.repo.tree():
+                raise exceptions.FileDoesntExistException("Path %s doesn't exist in repo." % path)
+            params += [path]
+
+        results = self.git_repo.repo.git.log(*params)
+
+        # git.log returns an empty string if there are no matching commits, don't split in that case
+        if len(results) > 0:
+            commits = results.split("\n")
+
+        return commits

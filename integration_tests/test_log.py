@@ -33,3 +33,35 @@ def test_log_diff_wrong_hash(repo_root):
 
     with pytest.raises(exceptions.ReferenceNotFoundException):
         repo.branch.log_diff("123456789z", "0.1.0")
+
+
+def test_log_grep(repo_root):
+    repo = GitRepo(repo_root)
+
+    commits = repo.log.grep_for_commits('master', "Initial commit")
+
+    assert len(commits) == 1
+    assert commits[0] == "ba82064c5fea1fc40270fb2748d5d8a783397609"
+
+
+def test_log_grep_empty(repo_root):
+    repo = GitRepo(repo_root)
+
+    commits = repo.log.grep_for_commits('master', "somethingthatcannotbefound", True)
+
+    assert len(commits) == 0
+
+
+def test_log_grep_with_path(repo_root):
+    repo = GitRepo(repo_root)
+
+    commits = repo.log.grep_for_commits('master', "Initial", path=".gitignore")
+
+    assert len(commits) == 1
+
+
+def test_log_grep_badpath(repo_root):
+    repo = GitRepo(repo_root)
+
+    with pytest.raises(exceptions.FileDoesntExistException):
+        repo.log.grep_for_commits('master', "Initial", path="badpath")
