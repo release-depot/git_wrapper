@@ -27,14 +27,15 @@ class GitRepo(object):
             :param logging.Logger logger: A pre-configured Python Logger object
         """
         self.__repo = None  # Added to clear pylint warnings
-        self._branch = None
-        self._commit = None
-        self._log = None
-        self._remote = None
-        self._tag = None
 
         self.__setup(path, repo)
         self._setup_logger(logger)
+
+        self.branch = GitBranch(git_repo=self, logger=self.logger)
+        self.commit = GitCommit(git_repo=self, logger=self.logger)
+        self.log = GitLog(git_repo=self, logger=self.logger)
+        self.remote = GitRemote(git_repo=self, logger=self.logger)
+        self.tag = GitTag(git_repo=self, logger=self.logger)
 
     def _setup_logger(self, logger):
         """Set up a pre-configured logger or create a new one
@@ -150,8 +151,6 @@ class GitRepo(object):
     @property
     def remote(self):
         """Return object to act on the repo's remotes"""
-        if not self._remote:
-            self._remote = GitRemote(git_repo=self, logger=self.logger)
         return self._remote
 
     @remote.setter
@@ -167,8 +166,6 @@ class GitRepo(object):
     @property
     def branch(self):
         """Return object to act on the repo's branches"""
-        if not self._branch:
-            self._branch = GitBranch(git_repo=self, logger=self.logger)
         return self._branch
 
     @branch.setter
@@ -184,8 +181,6 @@ class GitRepo(object):
     @property
     def commit(self):
         """Return object to act on the repo's commits"""
-        if not self._commit:
-            self._commit = GitCommit(git_repo=self, logger=self.logger)
         return self._commit
 
     @commit.setter
@@ -201,8 +196,6 @@ class GitRepo(object):
     @property
     def tag(self):
         """Return object to act on the repo's tags"""
-        if not self._tag:
-            self._tag = GitTag(git_repo=self, logger=self.logger)
         return self._tag
 
     @tag.setter
@@ -218,8 +211,6 @@ class GitRepo(object):
     @property
     def log(self):
         """Return object to act on the repo's logs"""
-        if not self._log:
-            self._log = GitLog(git_repo=self, logger=self.logger)
         return self._log
 
     @log.setter
