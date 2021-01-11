@@ -46,10 +46,15 @@ History
 * Added checkout parameter to branch creation and hard reset functions
 
 
- 0.2.4 (2021-01-11)
+0.2.4 (2021-01-11)
 ------------------
 
 * Added new function to cherry-pick a given commit
 * New parameter added to apply_patch() to preserve square brackets in commit messages
 * Added new function to grep logs
 * Deprecated location of other log functions in GitBranch, they should now be called from GitLog
+
+0.2.4.1 (2021-01-11)
+--------------------
+
+* Fix RST formatting issue to unbreak Pypi uploads
