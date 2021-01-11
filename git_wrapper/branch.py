@@ -3,7 +3,6 @@
 
 import re
 import os
-from string import Template
 
 import git
 from future.utils import raise_from
@@ -245,68 +244,17 @@ class GitBranch(object):
             msg = "Reversing diff failed. Error: {0}".format(ex)
             raise_from(exceptions.RevertException(msg), ex)
 
-    @reference_exists('hash_from')
-    @reference_exists('hash_to')
     def log_diff(self, hash_from, hash_to, pattern="$full_message"):
-        """Return a list of strings for log entries between two hashes.
-
-           Any of the following placeholders may be used in the pattern:
-             * $hash The full commit hash
-             * $short_hash The short commit hash, similar to --abbrev-commit
-             * $message The commit message
-             * $summary First line of the commit message
-             * $full_message Complete commit info with hash, author, message.
-               Similar to default "git log" ouput
-             * $author Commit author
-             * $date Date the commit was authored
-
-           :param str hash_from: A commit hash
-           :param str hash_to: A commit hash
-           :param str pattern: Formatter containing any of the placeholders above
-        """
-        range_ = "{0}..{1}".format(hash_from, hash_to)
-        commits = self.git_repo.repo.iter_commits(range_)
-        if not commits:
-            return []
-
-        # Prepare patterns
-        author_tpl = Template("$name <$email>")
-        full_message_tpl = Template(
-            "commit $hash\nAuthor: $author\nDate: $date\n\n$message"
-        )
-
-        # Parse the user-provided pattern
-        log = []
-        line_tpl = Template(pattern)
-        for c in commits:
-            c_author = author_tpl.safe_substitute(name=c.author.name,
-                                                  email=c.author.email)
-            c_date = c.authored_datetime.strftime("%a %b %d %H:%M:%S %Y %z")
-
-            placeholders = {"short_hash": c.hexsha[0:7],
-                            "hash": c.hexsha,
-                            "message": c.message,
-                            "summary": c.summary,
-                            "author": c_author,
-                            "date": c_date}
-
-            full_message = full_message_tpl.safe_substitute(placeholders)
-            placeholders["full_message"] = full_message
-
-            line = line_tpl.safe_substitute(placeholders)
-            log.append(line)
-
-        return log
+        """DEPRECATED. Use GitRepo.log.log_diff instead."""
+        self.logger.warning("DEPRECATED. GitRepo.branch.log_diff is deprecated, "
+                            "Use GitRepo.log.log_diff instead.")
+        return self.git_repo.log.log_diff(hash_from, hash_to, pattern)
 
     def short_log_diff(self, hash_from, hash_to):
-        """Return a list of strings for log entries between two hashes.
-
-           Log entries will be returned in the "<short_hash> <summary>" format.
-
-           :param str hash_from: A commit hash
-           :param str hash_to: A commit hash
-        """
-        return self.log_diff(hash_from, hash_to, "$short_hash $summary")
+        """DEPRECATED. Use GitRepo.log.short_log_diff instead."""
+        self.logger.warning("DEPRECATED. GitRepo.branch.short_log_diff is deprecated, "
+                            "Use GitRepo.log.short_log_diff instead.")
+        return self.git_repo.log.short_log_diff(hash_from, hash_to)
 
     def hard_reset(self, branch="master", remote="origin",
                    remote_branch="master", refresh=True):
