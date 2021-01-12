@@ -54,7 +54,7 @@ History
 * Added new function to grep logs
 * Deprecated location of other log functions in GitBranch, they should now be called from GitLog
 
-0.2.4.1 (2021-01-11)
---------------------
+0.2.5 (2021-01-12)
+------------------
 
 * Fix RST formatting issue to unbreak Pypi uploads
