@@ -65,3 +65,20 @@ def test_log_grep_badpath(repo_root):
 
     with pytest.raises(exceptions.FileDoesntExistException):
         repo.log.grep_for_commits('master', "Initial", path="badpath")
+
+
+def test_log_show_commit(repo_root):
+    repo = GitRepo(repo_root)
+    commit = repo.log.log_show_commit('ba82064c5fea1fc40270fb2748d5d8a783397609')
+    assert commit == (
+        'commit ba82064c5fea1fc40270fb2748d5d8a783397609\n'
+        'Author: Jason Joyce <jjoyce@redhat.com>\n'
+        'Date: Tue Jun 12 14:21:45 2018 -0400\n\n'
+        'Initial commit of README.rst\n'
+    )
+
+
+def test_log_show_commit_wrong_commit(repo_root):
+    repo = GitRepo(repo_root)
+    with pytest.raises(exceptions.ReferenceNotFoundException):
+        repo.log.log_show_commit('foo')

@@ -160,3 +160,53 @@ def test_log_grep_bad_path(mock_repo):
     with patch('git.repo.fun.name_to_object'):
         with pytest.raises(exceptions.FileDoesntExistException):
             repo.log.grep_for_commits("test_branch", 'test', True, 'wrongpath')
+
+
+def test_log_show_commit(mock_repo, fake_commits):
+    """
+    GIVEN GitRepo is initialized with a path and repo
+    WHEN log.log_show_commit is called with correct parameters
+    THEN a single string should be returned
+    """
+    mock_repo.commit.return_value = fake_commits[1]
+    repo = GitRepo(repo=mock_repo)
+
+    with patch('git.repo.fun.name_to_object'):
+        change = repo.log.log_show_commit('0010000000000000000')
+
+    assert change == (
+        "commit 0010000000000000000\n"
+        "Author: Test Author <testauthor@example.com>\n"
+        "Date: Wed Dec 05 10:36:19 2018 \n\n"
+        "This is a commit message (#1)\nWith some details."
+    )
+
+
+def test_log_show_commit_no_commit(mock_repo):
+    """
+    GIVEN GitRepo is initialized with a path and repo
+    WHEN log.log_show_commit is called with an unknown commit hash
+    THEN a ReferenceNotFoundException should be raised
+    """
+    repo = GitRepo(repo=mock_repo)
+
+    with patch('git.repo.fun.name_to_object') as mock_name_to_object:
+        with pytest.raises(exceptions.ReferenceNotFoundException):
+            mock_name_to_object.side_effect = git.exc.BadName()
+            repo.log.log_show_commit('foo')
+
+
+def test_log_show_commit_with_pattern(mock_repo, fake_commits):
+    """
+    GIVEN GitRepo is initialized with a path and repo
+    WHEN log.log_show_commit is called with a known commit and valid pattern
+    THEN a formatted string should be returned
+    """
+    mock_repo.commit.return_value = fake_commits[2]
+    repo = GitRepo(repo=mock_repo)
+
+    with patch('git.repo.fun.name_to_object'):
+        change = repo.log.log_show_commit('0020000000000000000',
+                                          pattern="$hash $author")
+
+    assert change == '0020000000000000000 Test Author <testauthor@example.com>'
