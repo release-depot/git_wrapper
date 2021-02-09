@@ -18,10 +18,8 @@ class GitLog(object):
         self.git_repo = git_repo
         self.logger = logger
 
-    @reference_exists('hash_from')
-    @reference_exists('hash_to')
-    def log_diff(self, hash_from, hash_to, pattern="$full_message"):
-        """Return a list of strings for log entries between two hashes.
+    def commit_format(self, commits, pattern='$full_message'):
+        """Return a list of strings representing the commits
 
            Any of the following placeholders may be used in the pattern:
              * $hash The full commit hash
@@ -33,16 +31,10 @@ class GitLog(object):
              * $author Commit author
              * $date Date the commit was authored
 
-           :param str hash_from: A commit hash
-           :param str hash_to: A commit hash
+           :param list commits: A list of commits
            :param str pattern: Formatter containing any of the placeholders above
+           :return: list of strings
         """
-        range_ = "{0}..{1}".format(hash_from, hash_to)
-        commits = self.git_repo.repo.iter_commits(range_)
-        if not commits:
-            return []
-
-        # Prepare patterns
         author_tpl = Template("$name <$email>")
         full_message_tpl = Template(
             "commit $hash\nAuthor: $author\nDate: $date\n\n$message"
@@ -68,8 +60,34 @@ class GitLog(object):
 
             line = line_tpl.safe_substitute(placeholders)
             log.append(line)
-
         return log
+
+    @reference_exists('hash_from')
+    @reference_exists('hash_to')
+    def log_diff(self, hash_from, hash_to, pattern="$full_message"):
+        """Return a list of strings for log entries between two hashes.
+
+           Any of the following placeholders may be used in the pattern:
+             * $hash The full commit hash
+             * $short_hash The short commit hash, similar to --abbrev-commit
+             * $message The commit message
+             * $summary First line of the commit message
+             * $full_message Complete commit info with hash, author, message.
+               Similar to default "git log" ouput
+             * $author Commit author
+             * $date Date the commit was authored
+
+           :param str hash_from: A commit hash
+           :param str hash_to: A commit hash
+           :param str pattern: Formatter containing any of the placeholders above
+           :return: list of strings
+        """
+        range_ = "{0}..{1}".format(hash_from, hash_to)
+        commits = self.git_repo.repo.iter_commits(range_)
+        if not commits:
+            return []
+
+        return self.commit_format(commits, pattern)
 
     def short_log_diff(self, hash_from, hash_to):
         """Return a list of strings for log entries between two hashes.
@@ -82,17 +100,19 @@ class GitLog(object):
         return self.log_diff(hash_from, hash_to, "$short_hash $summary")
 
     @reference_exists('branch')
-    def grep_for_commits(self, branch, grep_for, reverse=False, path=None):
+    def grep_for_commits(self, branch, grep_for, reverse=False, path=None,
+                         log_format='format:%H'):
         """Returns a list of matching commits shas.
            :param str branch: which branch to grep on
            :param str grep_for: what to grep for
            :param bool reverse: whether to return in reversed order
            :param str path: path to limit the search to, optionally
-           :return: A list of commit ids
+           :param str log_format: log format output. Defaults to format:%H. Please refer to git-log documentation about PRETTY FORMATS
+           :return: A list of resulting commit matching the pattern.
         """
         commits = []
 
-        params = [branch, "--format=format:%H", "--grep=%s" % grep_for]
+        params = [branch, "--format=%s" % log_format, "--grep=%s" % grep_for]
         if reverse:
             params += ['--reverse']
         if path:
@@ -107,3 +127,24 @@ class GitLog(object):
             commits = results.split("\n")
 
         return commits
+
+    @reference_exists('commit_ref')
+    def log_show_commit(self, commit_ref='HEAD', pattern="$full_message"):
+        """Return a string representing the given commit.
+
+           Any of the following placeholders may be used in the pattern:
+             * $hash The full commit hash
+             * $short_hash The short commit hash, similar to --abbrev-commit
+             * $message The commit message
+             * $summary First line of the commit message
+             * $full_message Complete commit info with hash, author, message.
+               Similar to default "git log" ouput
+             * $author Commit author
+             * $date Date the commit was authored
+
+           :param str commit_ref: A commit hash. Defaults to HEAD
+           :param str pattern: Formatter containing any of the placeholders above
+           :return: A string
+        """
+        result = self.git_repo.repo.commit(commit_ref)
+        return self.commit_format([result], pattern)[0]
