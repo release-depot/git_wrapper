@@ -76,6 +76,18 @@ Pushing a new release
 *********************
 
 1. Prepare a patch to update the version number (`example`_)
+
+   You may want to check the HISTORY.rst file renders correctly before
+   committing, as the twine upload will fail later if it
+   doesn't. Install one of these::
+
+    # dnf install python3-readme-renderer
+    $ pip install readme-renderer
+
+   Then run the following command::
+
+    $ python -m readme_renderer README.rst -o /tmp/README.html
+
 2. Once that's merged, tag that patch and push the new tag to the repo
 3. Run the following commands::
 

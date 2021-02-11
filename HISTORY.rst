@@ -58,3 +58,8 @@ History
 ------------------
 
 * Fix RST formatting issue to unbreak Pypi uploads
+
+0.2.6 (2021-02-11)
+------------------
+
+* Add new log function to get a single commit's information
