@@ -6,14 +6,9 @@ git_wrapper
 .. image:: https://img.shields.io/pypi/v/git_wrapper.svg
         :target: https://pypi.python.org/pypi/git_wrapper
 
-.. image:: https://img.shields.io/travis/release-depot/git_wrapper.svg
-        :target: https://travis-ci.org/release-depot/git_wrapper
-
 .. image:: https://readthedocs.org/projects/git-wrapper/badge/?version=latest
         :target: https://git-wrapper.readthedocs.io/en/latest/?badge=latest
         :alt: Documentation Status
-
-
 
 
 Python wrapper around GitPython
