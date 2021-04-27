@@ -9,3 +9,13 @@
 
  .. image:: https://img.shields.io/pypi/v/git_wrapper.svg
          :target: https://pypi.python.org/pypi/git_wrapper
+
+--- /dev/null
++++ a/newdir/newfile
+@@ -0,0 +1,1 @@
++This is a test
+
+--- /dev/null
++++ a/.newhiddenfile
+@@ -0,0 +1,1 @@
++This is a test adding a hidden file

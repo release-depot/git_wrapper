@@ -196,7 +196,7 @@ class GitBranch(object):
            :param bool signoff: Whether to add signed-off-by to commit message
         """
         # Ensure we don't commit more than we mean to
-        if self.git_repo.repo.is_dirty():
+        if self.git_repo.repo.is_dirty(untracked_files=True):
             msg = ("Repository {repo} contains uncommitted changes. Please clean workspace "
                    "before proceeding.".format(repo=self.git_repo.repo.working_dir))
             raise exceptions.DirtyRepositoryException(msg)
@@ -217,6 +217,9 @@ class GitBranch(object):
         except git.GitCommandError as ex:
             msg = "Could not apply diff {path} on branch {name}. Error: {error}".format(path=full_path, name=branch_name, error=ex)
             raise_from(exceptions.ChangeNotAppliedException(msg), ex)
+
+        # The diff may have added new files, ensure they are staged
+        self.git_repo.git.add(".")
 
         # Commit
         self.git_repo.commit.commit(message, signoff)

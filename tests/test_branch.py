@@ -352,6 +352,7 @@ def test_apply_diff(mock_repo):
 
     with patch('git.repo.fun.name_to_object'):
         repo.branch.apply_diff('test_branch', './requirements.txt', 'message', True)
+    assert repo.git.add.called is True
     assert repo.git.apply.called is True
     assert repo.git.commit.called is True
 

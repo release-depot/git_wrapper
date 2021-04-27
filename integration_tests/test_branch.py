@@ -25,6 +25,9 @@ def test_apply_diff(repo_root, datadir):
     assert "Test commit message" in message
     assert "Signed-off-by" in message
 
+    # Check the working directory is clean and the new files also committed
+    assert repo.repo.is_dirty(untracked_files=True) is False
+
 
 def test_apply_patch(repo_root, patch_cleanup, datadir):
     repo = GitRepo(repo_root)
