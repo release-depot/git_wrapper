@@ -81,7 +81,7 @@ Pushing a new release
 
    Then run the following command::
 
-    $ python -m readme_renderer README.rst -o /tmp/README.html
+    $ python -m readme_renderer HISTORY.rst -o /tmp/HISTORY.html
 
 2. Once that's merged, tag that patch and push the new tag to the repo
 3. Run the following commands::

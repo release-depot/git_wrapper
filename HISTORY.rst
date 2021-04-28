@@ -63,3 +63,8 @@ History
 ------------------
 
 * Add new log function to get a single commit's information
+
+0.2.7 (2021-04-28)
+------------------
+
+* Fix bug in apply_diff whereby new files didn't get picked up
