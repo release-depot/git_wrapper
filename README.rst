@@ -74,14 +74,9 @@ Pushing a new release
 
    You may want to check the HISTORY.rst file renders correctly before
    committing, as the twine upload will fail later if it
-   doesn't. Install one of these::
+   doesn't::
 
-    # dnf install python3-readme-renderer
-    $ pip install readme-renderer
-
-   Then run the following command::
-
-    $ python -m readme_renderer HISTORY.rst -o /tmp/HISTORY.html
+    $ tox -etwine
 
 2. Once that's merged, tag that patch and push the new tag to the repo
 3. Run the following commands::
