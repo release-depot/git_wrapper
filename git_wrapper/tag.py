@@ -72,3 +72,14 @@ class GitTag(object):
                 self.git_repo.git.push(remote, name)
         except git.GitCommandError as ex:
             raise_from(exceptions.PushException(msg), ex)
+
+    def names(self):
+        """List git tags in the repository."""
+        try:
+            tags_list = [x.name for x in self.git_repo.repo.tags]
+        except git.GitCommandError as ex:
+            repo_path = self.git_repo.repo.working_dir
+            msg = "Error listing tags for {repo}. Error: {error}".format(error=ex, repo=repo_path)
+            raise_from(exceptions.TaggingException(msg), ex)
+
+        return tags_list

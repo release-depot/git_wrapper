@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 """Tests for GitTag"""
 
-from mock import patch
+from mock import patch, PropertyMock
 
 import git
 import pytest
@@ -155,3 +155,41 @@ def test_push_tag_failed(mock_repo):
     with patch('git.repo.fun.name_to_object'):
         with pytest.raises(exceptions.PushException):
             repo.tag.push("my_tag", "origin")
+
+
+def test_names(mock_repo):
+    """
+    GIVEN GitRepo is initialized with a path and repo
+    WHEN GitTag.names() is called
+    THEN repo.tags is returned
+    """
+    class TestTag(object):
+
+        def __init__(self, name):
+            self.name = name
+
+    tag1 = TestTag('tag1')
+    tag2 = TestTag('tag2')
+    expected = [tag1, tag2]
+    expected_names = [x.name for x in expected]
+
+    type(mock_repo).tags = PropertyMock(return_value=expected)
+
+    repo = GitRepo(repo=mock_repo)
+    test_tags = repo.tag.names()
+
+    assert expected_names == test_tags
+
+
+def test_names_failed(mock_repo):
+    """
+    GIVEN GitRepo is initialized with a path and repo
+    WHEN GitTag.names() is called
+    AND repo.tags fails
+    THEN a TaggingException is raised
+    """
+    type(mock_repo).tags = PropertyMock(side_effect=git.GitCommandError('tags', ''))
+    repo = GitRepo(repo=mock_repo)
+
+    with pytest.raises(exceptions.TaggingException):
+        repo.tag.names()

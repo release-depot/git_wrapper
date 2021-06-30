@@ -11,6 +11,9 @@ def test_tag(repo_root):
     repo.git.checkout("master")
     head = repo.repo.head.object.hexsha
 
+    # Test tag listing function names() by checking for tag name in test repo
+    assert '0.2.4' in repo.tag.names()
+
     # Test tag creation by tagging the current head
     repo.tag.create("test_tag", head)
 
