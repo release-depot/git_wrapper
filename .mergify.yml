@@ -5,8 +5,8 @@ pull_request_rules:
             rebase_fallback: merge
             strict: true
       conditions:
-          - label!=no-mergify
-          - '#approved-reviews-by>=1'
+          - label!=(no-mergify|WIP)
+          - '#approved-reviews-by>=2'
           - check-success=flake8
           - check-success=integration
           - check-success=test (2.7)
