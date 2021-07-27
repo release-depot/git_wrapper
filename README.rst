@@ -71,21 +71,9 @@ Pushing a new release
 *********************
 
 1. Prepare a patch to update the version number (`example`_)
-
-   You may want to check the HISTORY.rst file renders correctly before
-   committing, as the twine upload will fail later if it
-   doesn't::
-
-    $ tox -etwine
-
 2. Once that's merged, tag that patch and push the new tag to the repo
-3. Run the following commands::
+3. Github Actions will then automatically build and publish a new release.
 
-    $ rm dist/*
-    $ python setup.py sdist bdist_wheel
-    $ twine upload --verbose dist/*
-
-(You need to have a PyPI account with the right permissions for that last step.)
 
 .. _example: https://github.com/release-depot/git_wrapper/commit/fc88bcb3158187ba9566dad896e3c688d8bc5109
 
