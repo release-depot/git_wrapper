@@ -68,3 +68,9 @@ History
 ------------------
 
 * Fix bug in apply_diff whereby new files didn't get picked up
+
+0.2.8 (2021-07-29)
+------------------
+
+* Add new tag function for listing git tags
+
