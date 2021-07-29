@@ -21,7 +21,10 @@ Python wrapper around GitPython
 Features
 --------
 
-* TODO
+See `documentation`_.
+
+.. _`documentation`: https://git-wrapper.readthedocs.io/en/latest/source/modules.html
+
 
 Notes
 -----
@@ -32,23 +35,7 @@ syntax and features may be compatible.
 Development
 -----------
 
-There are several dependencies needed to build and work on git_wrapper.  Using
-your distribution's package manager, install these system packages::
-
-  GitPython
-
-git_wrapper uses the upcoming standard of Pipfiles via pipenv.  This is integrated
-into our Makefile and once you have the above dependencies, you can simply run::
-
-  make dev
-
-This will install our dev environment for the package via pipenv.  It is installed
-with --user, so it does not affect your site-packages.  Pipenv creates a unique virtualenv
-for us, which you can activate via::
-
-  pipenv shell
-
-See the `pipenv documentation <https://docs.pipenv.org/>`_ for more detail.
+See CONTRIBUTING.rst.
 
 Documentation
 *************
