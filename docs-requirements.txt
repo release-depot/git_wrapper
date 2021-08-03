@@ -1,2 +1,2 @@
 -i https://pypi.python.org/simple
--e .
+-e .[docs]

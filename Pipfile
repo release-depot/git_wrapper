@@ -1,0 +1,11 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+git-wrapper = {path = ".", editable = true}
+
+[dev-packages]
+git-wrapper = {path = ".", extras = ["test","docs","dist"], editable = true}
+

@@ -1,1 +1,4 @@
+Welcome
+=======
+
 .. include:: ../README.rst

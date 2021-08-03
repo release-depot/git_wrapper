@@ -2,18 +2,52 @@
 History
 =======
 
-0.0.1 (2018-06-25)
+0.2.8 (2021-07-29)
 ------------------
 
-* First release on PyPI.
+* Add new tag function for listing git tags
 
-0.1.0 (2018-07-05)
+0.2.7 (2021-04-28)
 ------------------
 
-* Second release on PyPI.
-* Base functionality
-* git cherry support
-* Removing pipenv support.
+* Fix bug in apply_diff whereby new files didn't get picked up
+
+0.2.6 (2021-02-11)
+------------------
+
+* Add new log function to get a single commit's information
+
+0.2.5 (2021-01-12)
+------------------
+
+* Fix RST formatting issue to unbreak Pypi uploads
+
+0.2.4 (2021-01-11)
+------------------
+
+* Added new function to cherry-pick a given commit
+* New parameter added to apply_patch() to preserve square brackets in commit messages
+* Added new function to grep logs
+* Deprecated location of other log functions in GitBranch, they should now be called from GitLog
+
+0.2.3 (2020-12-15)
+------------------
+
+* Added checkout parameter to branch creation and hard reset functions
+
+0.2.2 (2020-07-20)
+------------------
+
+* Fifth release on PyPI.
+* Added new function to check if a commit exists on a given remote branch
+
+0.2.1 (2019-04-15)
+------------------
+
+* Fourth release on PyPI.
+* Added several new features
+        * Add function to compare commit references
+        * Add tagging functions
 
 0.2.0 (2019-01-18)
 ------------------
@@ -26,51 +60,15 @@ History
         * Revert support
         * Support for rebasing to a branch or commit.
 
-0.2.1 (2019-04-15)
+0.1.0 (2018-07-05)
 ------------------
 
-* Fourth release on PyPI.
-* Added several new features
-        * Add function to compare commit references
-        * Add tagging functions
+* Second release on PyPI.
+* Base functionality
+* git cherry support
+* Removing pipenv support.
 
-0.2.2 (2020-07-20)
+0.0.1 (2018-06-25)
 ------------------
 
-* Fifth release on PyPI.
-* Added new function to check if a commit exists on a given remote branch
-
-0.2.3 (2020-12-15)
-------------------
-
-* Added checkout parameter to branch creation and hard reset functions
-
-
-0.2.4 (2021-01-11)
-------------------
-
-* Added new function to cherry-pick a given commit
-* New parameter added to apply_patch() to preserve square brackets in commit messages
-* Added new function to grep logs
-* Deprecated location of other log functions in GitBranch, they should now be called from GitLog
-
-0.2.5 (2021-01-12)
-------------------
-
-* Fix RST formatting issue to unbreak Pypi uploads
-
-0.2.6 (2021-02-11)
-------------------
-
-* Add new log function to get a single commit's information
-
-0.2.7 (2021-04-28)
-------------------
-
-* Fix bug in apply_diff whereby new files didn't get picked up
-
-0.2.8 (2021-07-29)
-------------------
-
-* Add new tag function for listing git tags
-
+* First release on PyPI.
