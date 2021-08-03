@@ -18,11 +18,6 @@ Python wrapper around GitPython
 * Documentation: https://git-wrapper.readthedocs.io.
 
 
-Features
---------
-
-* TODO
-
 Notes
 -----
 
@@ -32,13 +27,9 @@ syntax and features may be compatible.
 Development
 -----------
 
-There are several dependencies needed to build and work on git_wrapper.  Using
-your distribution's package manager, install these system packages::
-
-  GitPython
-
-git_wrapper uses the upcoming standard of Pipfiles via pipenv.  This is integrated
-into our Makefile and once you have the above dependencies, you can simply run::
+git_wrapper supports both standard python virtual environment setups and pipenv,
+which is integrated into our Makefile. To set up a pipenv-based development
+enironment, you can simply run::
 
   make dev
 
@@ -57,30 +48,31 @@ To build the documentation on your checkout, simply run::
 
   make docs
 
-We plan to get this published in the near future, and this README will be
-updated when that happens.
-
 Contributions
 *************
 
 All new code should include tests that excercise the code and prove that it
 works, or fixes the bug you are trying to fix.  Any Pull Request without tests
-will not be accepted.
+will not be accepted. See CONTRIBUTING.rst for more details.
+
+Building
+********
+
+If you wish to build a local package for testing at any time, you can simply
+run::
+
+  make dist
+
+this will build a package with a .dev extension that you can install for testing
+and verification.
 
 Pushing a new release
 *********************
 
-1. Prepare a patch to update the version number (`example`_)
+1. Prepare a patch to update the version number (`example`_). Note that we no
+   longer need to update __version__ manually, just the HISTORY.rst file.
 2. Once that's merged, tag that patch and push the new tag to the repo
 3. Github Actions will then automatically build and publish a new release.
 
 
 .. _example: https://github.com/release-depot/git_wrapper/commit/fc88bcb3158187ba9566dad896e3c688d8bc5109
-
-Credits
--------
-
-This package was created with Cookiecutter_ and the `audreyr/cookiecutter-pypackage`_ project template.
-
-.. _Cookiecutter: https://github.com/audreyr/cookiecutter
-.. _`audreyr/cookiecutter-pypackage`: https://github.com/audreyr/cookiecutter-pypackage

@@ -103,7 +103,6 @@ ENV/
 .mypy_cache/
 
 # Pipenv
-Pipfile
 Pipfile.lock
 
 # auto-generated

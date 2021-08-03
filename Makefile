@@ -50,49 +50,40 @@ clean-test: ## remove test and coverage artifacts
 	rm -fr htmlcov/
 
 lint: ## check style with flake8
-	pipenv run flake8 --ignore=E501 git_wrapper tests integration_tests
+	pipenv run tox -eflake8
 
-test: dev ## run tests quickly with the default Python
-	pipenv run py.test tests
+test: ## run tests quickly with the default Python
+	pipenv run pytest
 
-test-all: dev ## run tests on every Python version with tox
+test-all: ## run tests on every Python version with tox
 	pipenv run tox
 
 coverage: ## check code coverage quickly with the default Python
-	pipenv run coverage run --source git_wrapper -m pytest
-	pipenv run coverage report -m
-	pipenv run coverage html
-	$(BROWSER) htmlcov/index.html
+	pipenv run  tox -epy
 
 docs: ## generate Sphinx HTML documentation, including API docs
-	rm -f docs/source/git_wrapper.rst
-	rm -f docs/source/modules.rst
-	sphinx-apidoc -o docs/source git_wrapper
-	$(MAKE) -C docs clean
-	$(MAKE) -C docs html
+	pipenv run $(MAKE) -C docs clean
+	pipenv run $(MAKE) -C docs html
 	$(BROWSER) docs/_build/html/index.html
 
 servedocs: docs ## compile the docs watching for changes
 	pipenv run watchmedo shell-command -p '*.rst' -c '$(MAKE) -C docs html' -R -D .
 
-release: clean ## package and upload a release
-	pipenv run python setup.py sdist upload
-	pipenv run python setup.py bdist_wheel upload
+release: dist ## package and upload a release
+	pipenv run twine upload dist/*
 
 dist: clean ## builds source and wheel package
-	pipenv run python setup.py sdist
-	pipenv run python setup.py bdist_wheel
+	pipenv run tox -etwine
 	ls -l dist
 
 init: ## install the dev environment
 	pip3 install --user pipenv
 
-install: init ## install the package to the active Python's site-packages
+install: init ## install the package to the virtualenv
 	pipenv run python setup.py install
 
 dev: init ## set up a development environment
 	pipenv install --dev
-	pipenv run pip install -e .
 
 reset: clean # clean out your pipenv virtualenv
 	pipenv uninstall --all

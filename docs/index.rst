@@ -8,13 +8,14 @@ Welcome to git_wrapper's documentation!
    readme
    installation
    usage
-   source/modules
+   modules
    contributing
    authors
    history
 
 Indices and tables
 ==================
+
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
