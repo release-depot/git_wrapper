@@ -51,7 +51,7 @@ To build the documentation on your checkout, simply run::
 Contributions
 *************
 
-All new code should include tests that excercise the code and prove that it
+All new code should include tests that exercise the code and prove that it
 works, or fixes the bug you are trying to fix.  Any Pull Request without tests
 will not be accepted. See CONTRIBUTING.rst for more details.
 
