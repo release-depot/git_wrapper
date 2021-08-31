@@ -1,12 +1,11 @@
-name: Upload Package to Pypi
+name: Upload Package to PyPI and TestPyPI
 
 on:
-  release:
+  push:
   workflow_dispatch:
 
 jobs:
   deploy:
-
     runs-on: ubuntu-latest
 
     steps:
@@ -14,15 +13,22 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v2
       with:
-        python-version: '3.x'
+        python-version: '3.9'
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         pip install -r test-requirements.txt
-    - name: Build and publish
-      env:
-        TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
-        TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
-      run: |
-        python -m build
-        twine upload dist/*
+    - name: Build package
+      run:  python -m build
+    - name: Publish to Test PyPI
+      uses: pypa/gh-action-pypi-publish@master
+      with:
+        user: __token__
+        password: ${{ secrets.TEST_PYPI_TOKEN }}
+        repository_url: https://test.pypi.org/legacy/
+    - name: Publish to PyPI
+      uses: pypa/gh-action-pypi-publish@master
+      if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
+      with:
+        user: __token__
+        password: ${{ secrets.PYPI_TOKEN }}
