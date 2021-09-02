@@ -18,9 +18,17 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -r dist-requirements.txt
+    - name: Create Environment Variable For Test PyPI Builds
+      if: startsWith(github.ref, 'refs/tags/') != true
+      shell: bash
+      run: |
+        echo 'SCM_NO_LOCAL_SCHEME=true' >> $GITHUB_ENV
+    - name: Check environment variable
+      run: echo "${{ env.SCM_NO_LOCAL_SCHEME}}"
     - name: Build package
       run:  python -m build
     - name: Publish to Test PyPI
+      if: startsWith(github.ref, 'refs/tags/') != true
       uses: pypa/gh-action-pypi-publish@master
       with:
         user: __token__
