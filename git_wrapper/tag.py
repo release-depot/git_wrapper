@@ -2,7 +2,6 @@
 """This module acts as an interface for acting on git tags"""
 
 import git
-from future.utils import raise_from
 
 from git_wrapper import exceptions
 from git_wrapper.utils.decorators import reference_exists
@@ -32,7 +31,7 @@ class GitTag(object):
             msg = "Error creating tag {name} on {ref}. Error: {error}".format(
                 name=name, ref=reference, error=ex
             )
-            raise_from(exceptions.TaggingException(msg), ex)
+            raise exceptions.TaggingException(msg) from ex
 
     @reference_exists('name')
     def delete(self, name):
@@ -46,7 +45,7 @@ class GitTag(object):
             msg = "Error deleting tag {name}. Error: {error}".format(
                 name=name, error=ex
             )
-            raise_from(exceptions.TaggingException(msg), ex)
+            raise exceptions.TaggingException(msg) from ex
 
     @reference_exists('name')
     def push(self, name, remote, dry_run=False):
@@ -71,7 +70,7 @@ class GitTag(object):
             else:
                 self.git_repo.git.push(remote, name)
         except git.GitCommandError as ex:
-            raise_from(exceptions.PushException(msg), ex)
+            raise exceptions.PushException(msg) from ex
 
     def names(self):
         """List git tags in the repository."""
@@ -80,6 +79,6 @@ class GitTag(object):
         except git.GitCommandError as ex:
             repo_path = self.git_repo.repo.working_dir
             msg = "Error listing tags for {repo}. Error: {error}".format(error=ex, repo=repo_path)
-            raise_from(exceptions.TaggingException(msg), ex)
+            raise exceptions.TaggingException(msg) from ex
 
         return tags_list

@@ -2,7 +2,6 @@
 """This module acts as an interface for acting on git remotes"""
 
 import git
-from future.utils import raise_from
 
 from git_wrapper import exceptions
 
@@ -73,7 +72,7 @@ class GitRemote(object):
                                         url=remote.url,
                                         error=ex)
             )
-            raise_from(exceptions.RemoteException(msg), ex)
+            raise exceptions.RemoteException(msg) from ex
 
     def fetch_all(self):
         """Refresh all the repo's remotes.

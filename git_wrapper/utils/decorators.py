@@ -4,7 +4,6 @@
 import inspect
 
 import git
-from future.utils import raise_from
 import wrapt
 
 from git_wrapper import exceptions
@@ -19,6 +18,6 @@ def reference_exists(ref):
             git.repo.fun.name_to_object(repo, all_args[ref])
         except git.exc.BadName as ex:
             msg = "Could not find %s %s." % (ref, all_args[ref])
-            raise_from(exceptions.ReferenceNotFoundException(msg), ex)
+            raise exceptions.ReferenceNotFoundException(msg) from ex
         return func(*args, **kwargs)
     return wrapper
