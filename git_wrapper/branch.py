@@ -5,7 +5,6 @@ import re
 import os
 
 import git
-from future.utils import raise_from
 
 from git_wrapper import exceptions
 from git_wrapper.utils.decorators import reference_exists
@@ -139,14 +138,14 @@ class GitBranch(object):
             self.git_repo.git.checkout(branch_name)
         except git.GitCommandError as ex:
             msg = "Could not checkout branch {name}. Error: {error}".format(name=branch_name, error=ex)
-            raise_from(exceptions.CheckoutException(msg), ex)
+            raise exceptions.CheckoutException(msg) from ex
 
         # Rebase
         try:
             self.git_repo.git.rebase(hash_)
         except git.GitCommandError as ex:
             msg = "Could not rebase hash {hash_} onto branch {name}. Error: {error}".format(hash_=hash_, name=branch_name, error=ex)
-            raise_from(exceptions.RebaseException(msg), ex)
+            raise exceptions.RebaseException(msg) from ex
 
         self.logger.debug("Successfully rebased branch %s to %s", branch_name, hash_)
 
@@ -156,7 +155,7 @@ class GitBranch(object):
             self.git_repo.git.rebase('--abort')
         except git.GitCommandError as ex:
             msg = "Rebase abort command failed. Error: {0}".format(ex)
-            raise_from(exceptions.AbortException(msg), ex)
+            raise exceptions.AbortException(msg) from ex
 
     @reference_exists('branch_name')
     def apply_patch(self, branch_name, path, keep_square_brackets=False):
@@ -174,7 +173,7 @@ class GitBranch(object):
             self.git_repo.git.checkout(branch_name)
         except git.GitCommandError as ex:
             msg = "Could not checkout branch {name}. Error: {error}".format(name=branch_name, error=ex)
-            raise_from(exceptions.CheckoutException(msg), ex)
+            raise exceptions.CheckoutException(msg) from ex
 
         # Apply the patch file
         try:
@@ -184,7 +183,7 @@ class GitBranch(object):
                 self.git_repo.git.am(full_path)
         except git.GitCommandError as ex:
             msg = "Could not apply patch {path} on branch {name}. Error: {error}".format(path=full_path, name=branch_name, error=ex)
-            raise_from(exceptions.ChangeNotAppliedException(msg), ex)
+            raise exceptions.ChangeNotAppliedException(msg) from ex
 
     @reference_exists('branch_name')
     def apply_diff(self, branch_name, diff_path, message, signoff=False):
@@ -209,14 +208,14 @@ class GitBranch(object):
             self.git_repo.git.checkout(branch_name)
         except git.GitCommandError as ex:
             msg = "Could not checkout branch {name}. Error: {error}".format(name=branch_name, error=ex)
-            raise_from(exceptions.CheckoutException(msg), ex)
+            raise exceptions.CheckoutException(msg) from ex
 
         # Apply the diff
         try:
             self.git_repo.git.apply(full_path)
         except git.GitCommandError as ex:
             msg = "Could not apply diff {path} on branch {name}. Error: {error}".format(path=full_path, name=branch_name, error=ex)
-            raise_from(exceptions.ChangeNotAppliedException(msg), ex)
+            raise exceptions.ChangeNotAppliedException(msg) from ex
 
         # The diff may have added new files, ensure they are staged
         self.git_repo.git.add(".")
@@ -230,7 +229,7 @@ class GitBranch(object):
             self.git_repo.git.am('--abort')
         except git.GitCommandError as ex:
             msg = "Failed to abort git am operation. Error: {0}".format(ex)
-            raise_from(exceptions.AbortException(msg), ex)
+            raise exceptions.AbortException(msg) from ex
 
     def reverse_diff(self, diff_path):
         """Reverse a diff that was applied to the workspace.
@@ -245,7 +244,7 @@ class GitBranch(object):
             self.git_repo.git.apply(full_path, reverse=True)
         except git.GitCommandError as ex:
             msg = "Reversing diff failed. Error: {0}".format(ex)
-            raise_from(exceptions.RevertException(msg), ex)
+            raise exceptions.RevertException(msg) from ex
 
     def log_diff(self, hash_from, hash_to, pattern="$full_message"):
         """DEPRECATED. Use GitRepo.log.log_diff instead."""
@@ -286,7 +285,7 @@ class GitBranch(object):
             commit = git.repo.fun.name_to_object(self.git_repo.repo, ref)
         except git.exc.BadName as ex:
             msg = "Could not find reference {0}.".format(ref)
-            raise_from(exceptions.ReferenceNotFoundException(msg), ex)
+            raise exceptions.ReferenceNotFoundException(msg) from ex
 
         try:
             # Preserve the reference name if there is one
@@ -303,7 +302,7 @@ class GitBranch(object):
                 "Could not checkout branch {branch}. Error: {error}".format(
                     branch=branch, error=ex)
             )
-            raise_from(exceptions.CheckoutException(msg), ex)
+            raise exceptions.CheckoutException(msg) from ex
 
         # Reset --hard to that reference
         try:
@@ -315,7 +314,7 @@ class GitBranch(object):
                 "Error resetting branch {branch} to {ref}. "
                 "Error: {error}".format(ref=ref, branch=branch, error=ex)
             )
-            raise_from(exceptions.ResetException(msg), ex)
+            raise exceptions.ResetException(msg) from ex
 
         # Return to the original head if required
         if not checkout:
@@ -326,7 +325,7 @@ class GitBranch(object):
                     "Could not checkout {orig}. Error: {error}".format(
                         orig=orig, error=ex)
                 )
-                raise_from(exceptions.CheckoutException(msg), ex)
+                raise exceptions.CheckoutException(msg) from ex
 
     @reference_exists('remote_branch')
     @reference_exists('hash_')

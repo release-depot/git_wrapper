@@ -2,7 +2,6 @@
 """This module acts as an interface for acting on git commits"""
 
 import git
-from future.utils import raise_from
 
 from git_wrapper import exceptions
 from git_wrapper.utils.decorators import reference_exists
@@ -31,7 +30,7 @@ class GitCommit(object):
             output = self.git_repo.git.describe('--all', sha).split('-g')
         except git.CommandError as ex:
             msg = "Error while running describe command on sha {sha}: {error}".format(sha=sha, error=ex)
-            raise_from(exceptions.DescribeException(msg), ex)
+            raise exceptions.DescribeException(msg) from ex
 
         if output:
             tag = output[0]
@@ -78,7 +77,7 @@ class GitCommit(object):
         except git.GitCommandError as ex:
             msg = "Revert failed for hash {hash_}. Error: {error}".format(
                 hash_=hash_, error=ex)
-            raise_from(exceptions.RevertException(msg), ex)
+            raise exceptions.RevertException(msg) from ex
 
         if message:
             commit = git.repo.fun.name_to_object(self.git_repo.repo, hash_)
@@ -125,14 +124,14 @@ class GitCommit(object):
             self.git_repo.git.checkout(branch_name)
         except git.GitCommandError as ex:
             msg = "Could not checkout branch {name}. Error: {error}".format(name=branch_name, error=ex)
-            raise_from(exceptions.CheckoutException(msg), ex)
+            raise exceptions.CheckoutException(msg) from ex
 
         # Cherry-pick
         try:
             self.git_repo.git.cherry_pick(sha)
         except git.GitCommandError as ex:
             msg = "Could not cherry-pick commit {sha} on {name}. Error: {error}".format(name=branch_name, sha=sha, error=ex)
-            raise_from(exceptions.ChangeNotAppliedException(msg), ex)
+            raise exceptions.ChangeNotAppliedException(msg) from ex
 
         self.logger.debug("Successfully cherry-picked commit %s on %s", sha, branch_name)
 
@@ -142,4 +141,4 @@ class GitCommit(object):
             self.git_repo.git.cherry_pick('--abort')
         except git.GitCommandError as ex:
             msg = "Cherrypick abort command failed. Error: {0}".format(ex)
-            raise_from(exceptions.AbortException(msg), ex)
+            raise exceptions.AbortException(msg) from ex

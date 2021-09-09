@@ -6,7 +6,6 @@ import os
 import shutil
 
 import git
-from future.utils import raise_from
 
 from git_wrapper.branch import GitBranch
 from git_wrapper.commit import GitCommit
@@ -100,7 +99,7 @@ class GitRepo(object):
                                                  bare=bare)
         except git.GitCommandError as ex:
             msg = "Error cloning repository {repo}".format(repo=clone_from)
-            raise_from(exceptions.RepoCreationException(msg), ex)
+            raise exceptions.RepoCreationException(msg) from ex
 
         return GitRepo(repo=repo)
 
@@ -146,7 +145,7 @@ class GitRepo(object):
                     r = self.repo.create_remote(name, url)
                 except git.GitCommandError as ex:
                     msg = "Issue with recreating remote {remote}. Error: {error}".format(remote=name, error=ex)
-                    raise_from(exceptions.RemoteException(msg), ex)
+                    raise exceptions.RemoteException(msg) from ex
 
     @property
     def remote(self):
