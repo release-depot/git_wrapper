@@ -98,7 +98,7 @@ class GitRepo(object):
                                                  clone_to,
                                                  bare=bare)
         except git.GitCommandError as ex:
-            msg = "Error cloning repository {repo}".format(repo=clone_from)
+            msg = f"Error cloning repository {clone_from}"
             raise exceptions.RepoCreationException(msg) from ex
 
         return GitRepo(repo=repo)
@@ -118,7 +118,8 @@ class GitRepo(object):
         self.logger.debug("Remotes for %s: %s", local_path, ' '.join(list(remotes)))
 
         if len(remotes) == 0:
-            msg = "No remotes found for repo {repo}, cannot reclone. Aborting deletion.".format(repo=local_path)
+            msg = (f"No remotes found for repo {local_path}, cannot reclone. "
+                   "Aborting deletion.")
             raise exceptions.RepoCreationException(msg)
 
         # Select a remote for the clone, 'origin' by default
@@ -144,7 +145,7 @@ class GitRepo(object):
                     self.logger.debug("Adding remote %s", name)
                     r = self.repo.create_remote(name, url)
                 except git.GitCommandError as ex:
-                    msg = "Issue with recreating remote {remote}. Error: {error}".format(remote=name, error=ex)
+                    msg = f"Issue with recreating remote {name}. Error: {ex}"
                     raise exceptions.RemoteException(msg) from ex
 
     @property

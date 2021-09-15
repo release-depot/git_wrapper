@@ -28,7 +28,8 @@ class GitBranch(object):
         """
         full_path = os.path.realpath(os.path.expanduser(path))
         if not os.path.isfile(full_path):
-            raise exceptions.FileDoesntExistException('{path} is not a file.'.format(path=full_path))
+            msg = f"{full_path} is not a file."
+            raise exceptions.FileDoesntExistException(msg)
         return full_path
 
     def _run_cherry(self, upstream, head, regex):
@@ -88,7 +89,7 @@ class GitBranch(object):
         else:
             if remote not in self.git_repo.remote.names():
                 raise exceptions.RemoteException(
-                    "Remote {0} does not exist.".format(remote)
+                    f"Remote {remote} does not exist."
                 )
             if name in self.git_repo.repo.remotes[remote].refs:
                 return True
@@ -129,22 +130,24 @@ class GitBranch(object):
         )
 
         if self.git_repo.repo.is_dirty():
-            msg = ("Repository {0} is dirty. Please clean workspace "
-                   "before proceeding.".format(self.git_repo.repo.working_dir))
+            working_dir = self.git_repo.repo.working_dir
+            msg = (f"Repository {working_dir} is dirty. Please clean workspace "
+                   "before proceeding.")
             raise exceptions.DirtyRepositoryException(msg)
 
         # Checkout
         try:
             self.git_repo.git.checkout(branch_name)
         except git.GitCommandError as ex:
-            msg = "Could not checkout branch {name}. Error: {error}".format(name=branch_name, error=ex)
+            msg = f"Could not checkout branch {branch_name}. Error: {ex}"
             raise exceptions.CheckoutException(msg) from ex
 
         # Rebase
         try:
             self.git_repo.git.rebase(hash_)
         except git.GitCommandError as ex:
-            msg = "Could not rebase hash {hash_} onto branch {name}. Error: {error}".format(hash_=hash_, name=branch_name, error=ex)
+            msg = (f"Could not rebase hash {hash_} onto branch {branch_name}. "
+                   f"Error: {ex}")
             raise exceptions.RebaseException(msg) from ex
 
         self.logger.debug("Successfully rebased branch %s to %s", branch_name, hash_)
@@ -154,7 +157,7 @@ class GitBranch(object):
         try:
             self.git_repo.git.rebase('--abort')
         except git.GitCommandError as ex:
-            msg = "Rebase abort command failed. Error: {0}".format(ex)
+            msg = f"Rebase abort command failed. Error: {ex}"
             raise exceptions.AbortException(msg) from ex
 
     @reference_exists('branch_name')
@@ -172,7 +175,7 @@ class GitBranch(object):
         try:
             self.git_repo.git.checkout(branch_name)
         except git.GitCommandError as ex:
-            msg = "Could not checkout branch {name}. Error: {error}".format(name=branch_name, error=ex)
+            msg = f"Could not checkout branch {branch_name}. Error: {ex}"
             raise exceptions.CheckoutException(msg) from ex
 
         # Apply the patch file
@@ -182,7 +185,8 @@ class GitBranch(object):
             else:
                 self.git_repo.git.am(full_path)
         except git.GitCommandError as ex:
-            msg = "Could not apply patch {path} on branch {name}. Error: {error}".format(path=full_path, name=branch_name, error=ex)
+            msg = (f"Could not apply patch {full_path} on branch "
+                   f"{branch_name}. Error: {ex}")
             raise exceptions.ChangeNotAppliedException(msg) from ex
 
     @reference_exists('branch_name')
@@ -196,8 +200,9 @@ class GitBranch(object):
         """
         # Ensure we don't commit more than we mean to
         if self.git_repo.repo.is_dirty(untracked_files=True):
-            msg = ("Repository {repo} contains uncommitted changes. Please clean workspace "
-                   "before proceeding.".format(repo=self.git_repo.repo.working_dir))
+            repo = self.git_repo.repo.working_dir
+            msg = (f"Repository {repo} contains uncommitted changes. Please "
+                   "clean workspace before proceeding.")
             raise exceptions.DirtyRepositoryException(msg)
 
         # Check diff file exists
@@ -207,14 +212,15 @@ class GitBranch(object):
         try:
             self.git_repo.git.checkout(branch_name)
         except git.GitCommandError as ex:
-            msg = "Could not checkout branch {name}. Error: {error}".format(name=branch_name, error=ex)
+            msg = f"Could not checkout branch {branch_name}. Error: {ex}"
             raise exceptions.CheckoutException(msg) from ex
 
         # Apply the diff
         try:
             self.git_repo.git.apply(full_path)
         except git.GitCommandError as ex:
-            msg = "Could not apply diff {path} on branch {name}. Error: {error}".format(path=full_path, name=branch_name, error=ex)
+            msg = (f"Could not apply diff {full_path} on branch "
+                   f"{branch_name}. Error: {ex}")
             raise exceptions.ChangeNotAppliedException(msg) from ex
 
         # The diff may have added new files, ensure they are staged
@@ -228,7 +234,7 @@ class GitBranch(object):
         try:
             self.git_repo.git.am('--abort')
         except git.GitCommandError as ex:
-            msg = "Failed to abort git am operation. Error: {0}".format(ex)
+            msg = f"Failed to abort git am operation. Error: {ex}"
             raise exceptions.AbortException(msg) from ex
 
     def reverse_diff(self, diff_path):
@@ -238,12 +244,13 @@ class GitBranch(object):
         """
         full_path = os.path.expanduser(diff_path)
         if not os.path.isfile(full_path):
-            raise exceptions.FileDoesntExistException('{path} is not a file.'.format(path=full_path))
+            msg = f"{full_path} is not a file."
+            raise exceptions.FileDoesntExistException(msg)
 
         try:
             self.git_repo.git.apply(full_path, reverse=True)
         except git.GitCommandError as ex:
-            msg = "Reversing diff failed. Error: {0}".format(ex)
+            msg = f"Reversing diff failed. Error: {ex}"
             raise exceptions.RevertException(msg) from ex
 
     def log_diff(self, hash_from, hash_to, pattern="$full_message"):
@@ -270,7 +277,7 @@ class GitBranch(object):
         if refresh:
             self.git_repo.remote.fetch(remote)
 
-        remote_ref = "{0}/{1}".format(remote, remote_branch)
+        remote_ref = f"{remote}/{remote_branch}"
         self.hard_reset_to_ref(branch, remote_ref)
 
     def hard_reset_to_ref(self, branch, ref, checkout=True):
@@ -284,7 +291,7 @@ class GitBranch(object):
         try:
             commit = git.repo.fun.name_to_object(self.git_repo.repo, ref)
         except git.exc.BadName as ex:
-            msg = "Could not find reference {0}.".format(ref)
+            msg = f"Could not find reference {ref}."
             raise exceptions.ReferenceNotFoundException(msg) from ex
 
         try:
@@ -298,10 +305,7 @@ class GitBranch(object):
         try:
             self.git_repo.git.checkout(branch)
         except git.GitCommandError as ex:
-            msg = (
-                "Could not checkout branch {branch}. Error: {error}".format(
-                    branch=branch, error=ex)
-            )
+            msg = f"Could not checkout branch {branch}. Error: {ex}"
             raise exceptions.CheckoutException(msg) from ex
 
         # Reset --hard to that reference
@@ -310,10 +314,8 @@ class GitBranch(object):
                                           index=True,
                                           working_tree=True)
         except git.GitCommandError as ex:
-            msg = (
-                "Error resetting branch {branch} to {ref}. "
-                "Error: {error}".format(ref=ref, branch=branch, error=ex)
-            )
+            msg = (f"Error resetting branch {branch} to {ref}. "
+                   f"Error: {ex}")
             raise exceptions.ResetException(msg) from ex
 
         # Return to the original head if required
@@ -321,10 +323,7 @@ class GitBranch(object):
             try:
                 self.git_repo.git.checkout(orig)
             except git.GitCommandError as ex:
-                msg = (
-                    "Could not checkout {orig}. Error: {error}".format(
-                        orig=orig, error=ex)
-                )
+                msg = f"Could not checkout {orig}. Error: {ex}"
                 raise exceptions.CheckoutException(msg) from ex
 
     @reference_exists('remote_branch')

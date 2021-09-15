@@ -57,21 +57,15 @@ class GitRemote(object):
         try:
             remote = self.git_repo.repo.remote(remote)
         except ValueError:
-            msg = "Remote {remote} does not exist on repo {repo}".format(
-                remote=remote,
-                repo=self.git_repo.repo.working_dir
-            )
+            repo = self.git_repo.repo.working_dir
+            msg = f"Remote {remote} does not exist on repo {repo}"
             raise exceptions.ReferenceNotFoundException(msg)
 
         try:
             remote.fetch()
         except git.GitCommandError as ex:
-            msg = (
-                "Could not fetch remote {remote} ({url}). "
-                "Error: {error}".format(remote=remote.name,
-                                        url=remote.url,
-                                        error=ex)
-            )
+            msg = (f"Could not fetch remote {remote.name} ({remote.url}). "
+                   f"Error: {ex}")
             raise exceptions.RemoteException(msg) from ex
 
     def fetch_all(self):
@@ -91,5 +85,5 @@ class GitRemote(object):
                 errors.append(remote)
 
         if errors:
-            msg = "Error fetching these remotes: {0}".format(", ".join(errors))
+            msg = f"Error fetching these remotes: {', '.join(errors)}"
             raise exceptions.RemoteException(msg)

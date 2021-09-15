@@ -82,7 +82,7 @@ class GitLog(object):
            :param str pattern: Formatter containing any of the placeholders above
            :return: list of strings
         """
-        range_ = "{0}..{1}".format(hash_from, hash_to)
+        range_ = f"{hash_from}..{hash_to}"
         commits = self.git_repo.repo.iter_commits(range_)
         if not commits:
             return []
