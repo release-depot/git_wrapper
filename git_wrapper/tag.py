@@ -28,9 +28,7 @@ class GitTag(object):
         try:
             self.git_repo.repo.create_tag(name, reference)
         except git.GitCommandError as ex:
-            msg = "Error creating tag {name} on {ref}. Error: {error}".format(
-                name=name, ref=reference, error=ex
-            )
+            msg = f"Error creating tag {name} on {reference}. Error: {ex}"
             raise exceptions.TaggingException(msg) from ex
 
     @reference_exists('name')
@@ -42,9 +40,7 @@ class GitTag(object):
         try:
             self.git_repo.git.tag("-d", name)
         except git.GitCommandError as ex:
-            msg = "Error deleting tag {name}. Error: {error}".format(
-                name=name, error=ex
-            )
+            msg = f"Error deleting tag {name}. Error: {ex}"
             raise exceptions.TaggingException(msg) from ex
 
     @reference_exists('name')
@@ -56,13 +52,11 @@ class GitTag(object):
            :param bool dry_run: Whether to run the commands in dry-run mode
         """
         if remote not in self.git_repo.remote.names():
-            msg = "No remote named {0}".format(remote)
+            msg = f"No remote named {remote}"
             raise exceptions.ReferenceNotFoundException(msg)
 
-        msg = (
-            "Error pushing tag {name} (dry-run: {dry_run}) to remote "
-            "{remote}.".format(name=name, remote=remote, dry_run=dry_run)
-        )
+        msg = (f"Error pushing tag {name} (dry-run: {dry_run}) to remote "
+               f"{remote}.")
 
         try:
             if dry_run:
@@ -78,7 +72,7 @@ class GitTag(object):
             tags_list = [x.name for x in self.git_repo.repo.tags]
         except git.GitCommandError as ex:
             repo_path = self.git_repo.repo.working_dir
-            msg = "Error listing tags for {repo}. Error: {error}".format(error=ex, repo=repo_path)
+            msg = f"Error listing tags for {repo_path}. Error: {ex}"
             raise exceptions.TaggingException(msg) from ex
 
         return tags_list

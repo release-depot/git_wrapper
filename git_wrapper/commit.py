@@ -29,7 +29,7 @@ class GitCommit(object):
         try:
             output = self.git_repo.git.describe('--all', sha).split('-g')
         except git.CommandError as ex:
-            msg = "Error while running describe command on sha {sha}: {error}".format(sha=sha, error=ex)
+            msg = f"Error while running describe command on sha {sha}: {ex}"
             raise exceptions.DescribeException(msg) from ex
 
         if output:
@@ -75,16 +75,15 @@ class GitCommit(object):
         try:
             self.git_repo.git.revert(hash_, no_edit=True)
         except git.GitCommandError as ex:
-            msg = "Revert failed for hash {hash_}. Error: {error}".format(
-                hash_=hash_, error=ex)
+            msg = f"Revert failed for hash {hash_}. Error: {ex}"
             raise exceptions.RevertException(msg) from ex
 
         if message:
             commit = git.repo.fun.name_to_object(self.git_repo.repo, hash_)
             self.git_repo.git.commit(
                 "--amend",
-                "-m", 'Revert "{0}"'.format(commit.summary),
-                "-m", "This reverts commit {0}.".format(commit.hexsha),
+                "-m", f"Revert '{commit.summary}'",
+                "-m", f"This reverts commit {commit.hexsha}.",
                 "-m", message
             )
 
@@ -115,22 +114,24 @@ class GitCommit(object):
            :param str branch_name: The branch to apply it to
         """
         if self.git_repo.repo.is_dirty():
-            msg = ("Repository {0} is dirty. Please clean workspace "
-                   "before proceeding.".format(self.git_repo.repo.working_dir))
+            working_dir = self.git_repo.repo.working_dir
+            msg = (f"Repository {working_dir} is dirty. Please clean "
+                   "workspace before proceeding.")
             raise exceptions.DirtyRepositoryException(msg)
 
         # Checkout
         try:
             self.git_repo.git.checkout(branch_name)
         except git.GitCommandError as ex:
-            msg = "Could not checkout branch {name}. Error: {error}".format(name=branch_name, error=ex)
+            msg = f"Could not checkout branch {branch_name}. Error: {ex}"
             raise exceptions.CheckoutException(msg) from ex
 
         # Cherry-pick
         try:
             self.git_repo.git.cherry_pick(sha)
         except git.GitCommandError as ex:
-            msg = "Could not cherry-pick commit {sha} on {name}. Error: {error}".format(name=branch_name, sha=sha, error=ex)
+            msg = (f"Could not cherry-pick commit {sha} on {branch_name}. "
+                   f"Error: {ex}")
             raise exceptions.ChangeNotAppliedException(msg) from ex
 
         self.logger.debug("Successfully cherry-picked commit %s on %s", sha, branch_name)
@@ -140,5 +141,5 @@ class GitCommit(object):
         try:
             self.git_repo.git.cherry_pick('--abort')
         except git.GitCommandError as ex:
-            msg = "Cherrypick abort command failed. Error: {0}".format(ex)
+            msg = f"Cherrypick abort command failed. Error: {ex}"
             raise exceptions.AbortException(msg) from ex

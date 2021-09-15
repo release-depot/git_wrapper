@@ -38,12 +38,12 @@ def fake_commits(count=3):
     commits = []
     for i in range(0, count):
         author = Author(name="Test Author", email="testauthor@example.com")
-        msg = "This is a commit message (#{0})\nWith some details.".format(i)
+        msg = f"This is a commit message (#{i})\nWith some details."
 
         commit = Commit(
-            hexsha="00{0}0000000000000000".format(i),
+            hexsha=f"00{i}0000000000000000",
             message=msg,
-            summary="This is a commit message (#{0})".format(i),
+            summary=f"This is a commit message (#{i})",
             author=author,
             authored_datetime=datetime(2018, 12, 5, 10, 36, 19)
         )
