@@ -112,12 +112,13 @@ class GitLog(object):
         """
         commits = []
 
-        params = [branch, "--format=%s" % log_format, "--grep=%s" % grep_for]
+        params = [branch, f"--format={log_format}", f"--grep={grep_for}"]
         if reverse:
             params += ['--reverse']
         if path:
             if path not in self.git_repo.repo.tree():
-                raise exceptions.FileDoesntExistException("Path %s doesn't exist in repo." % path)
+                msg = f"Path {path} doesn't exist in repo."
+                raise exceptions.FileDoesntExistException(msg)
             params += [path]
 
         results = self.git_repo.repo.git.log(*params)

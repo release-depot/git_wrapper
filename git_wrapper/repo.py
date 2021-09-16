@@ -90,8 +90,8 @@ class GitRepo(object):
            :return GitRepo: Returns the newly created repo object
         """
         clone_to = os.path.realpath(os.path.expanduser(clone_to))
-        logging.debug("Preparing to clone repository %s into directory %s",
-                      clone_from, clone_to)
+        logging.debug(f"Preparing to clone repository {clone_from} into "
+                      f"directory {clone_to}")
 
         try:
             repo = git.repo.base.Repo.clone_from(clone_from,
@@ -108,14 +108,15 @@ class GitRepo(object):
         # Get local path for the repo
         local_path = self.repo.working_dir
 
-        self.logger.info("Preparing to delete and reclone repo %s", local_path)
+        self.logger.info(f"Preparing to delete and reclone repo {local_path}")
 
         # Get all of the remotes info
         remotes = {}
         for r in self.repo.remotes:
             remotes[r.name] = r.url
 
-        self.logger.debug("Remotes for %s: %s", local_path, ' '.join(list(remotes)))
+        remote_list = ' '.join(list(remotes))
+        self.logger.debug(f"Remotes for {local_path}: {remote_list}")
 
         if len(remotes) == 0:
             msg = (f"No remotes found for repo {local_path}, cannot reclone. "
@@ -128,10 +129,11 @@ class GitRepo(object):
         else:
             default_remote = list(remotes)[0]
 
-        self.logger.debug("Default remote for cloning set to '%s'", default_remote)
+        msg = f"Default remote for cloning set to '{default_remote}'"
+        self.logger.debug(msg)
 
         # Delete the local repo
-        self.logger.info("Deleting local repo at %s", local_path)
+        self.logger.info(f"Deleting local repo at {local_path}")
         shutil.rmtree(local_path, ignore_errors=True)
 
         # Clone it again
@@ -142,7 +144,7 @@ class GitRepo(object):
         for name, url in remotes.items():
             if name != default_remote:
                 try:
-                    self.logger.debug("Adding remote %s", name)
+                    self.logger.debug(f"Adding remote {name}")
                     r = self.repo.create_remote(name, url)
                 except git.GitCommandError as ex:
                     msg = f"Issue with recreating remote {name}. Error: {ex}"

@@ -31,20 +31,23 @@ class GitRemote(object):
             :param str url: The url to use for the remote
             :return bool: True if the remote was added, False otherwise
         """
-        self.logger.debug("Adding remote %s (%s) to repo %s", name, url, self.git_repo.repo.working_dir)
+        working_dir = self.git_repo.repo.working_dir
+        self.logger.debug(f"Adding remote {name} ({url}) to repo {working_dir}")
         ret_status = False
 
         try:
             remote = self.git_repo.repo.create_remote(name, url)
         except git.CommandError as ex:
-            self.logger.debug("Failed to create new remote %s (%s). Error: %s", name, url, ex)
+            self.logger.debug(f"Failed to create new remote {name} ({url}). "
+                              f"Error: {ex}")
             return ret_status
 
         try:
             remote.update()
             ret_status = True
         except git.CommandError as ex:
-            self.logger.debug("Failed to update new remote %s (%s), removing it. Error: %s", name, url, ex)
+            self.logger.debug(f"Failed to update new remote {name} ({url}), "
+                              f"removing it. Error: {ex}")
             self.git_repo.repo.delete_remote(remote)
 
         return ret_status
@@ -81,7 +84,7 @@ class GitRemote(object):
             try:
                 self.fetch(remote)
             except exceptions.RemoteException:
-                self.logger.exception("Error fetching remote %s", remote)
+                self.logger.exception(f"Error fetching remote {remote}")
                 errors.append(remote)
 
         if errors:
