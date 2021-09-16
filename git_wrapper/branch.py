@@ -102,7 +102,9 @@ class GitBranch(object):
            :param str upstream: Branch name
            :param str head: Branch name
         """
-        self.logger.debug("Get new patches between upstream (%s) and head (%s)", upstream, head)
+        msg = (f"Get new patches between upstream ({upstream}) "
+               f"and head ({head})")
+        self.logger.debug(msg)
         head_only_regex = re.compile(r'^\+\s(.*?)\s(.*)')
         return self._run_cherry(upstream, head, head_only_regex)
 
@@ -112,7 +114,10 @@ class GitBranch(object):
            :param str upstream: Branch name
            :param str head: Branch name
         """
-        self.logger.debug("Get patches that are in both upstream (%s) and head (%s)", upstream, head)
+        msg = (f"Get patches that are in both upstream ({upstream}) "
+               f"and head ({head})")
+        self.logger.debug(msg)
+
         equivalent_regex = re.compile(r'^\-\s(.*?)\s(.*)')
         return self._run_cherry(upstream, head, equivalent_regex)
 
@@ -125,8 +130,8 @@ class GitBranch(object):
            :param str hash_: The commit hash or reference to rebase to
         """
         self.logger.debug(
-            "Rebasing branch %s to hash %s. Repo currently at commit %s.",
-            branch_name, hash_, self.git_repo.repo.head.commit
+            f"Rebasing branch {branch_name} to hash {hash_}. "
+            f"Repo currently at commit {self.git_repo.repo.head.commit}."
         )
 
         if self.git_repo.repo.is_dirty():
@@ -150,7 +155,8 @@ class GitBranch(object):
                    f"Error: {ex}")
             raise exceptions.RebaseException(msg) from ex
 
-        self.logger.debug("Successfully rebased branch %s to %s", branch_name, hash_)
+        msg = f"Successfully rebased branch {branch_name} to {hash_}"
+        self.logger.debug(msg)
 
     def abort_rebase(self):
         """Aborts a rebase."""

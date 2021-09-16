@@ -17,7 +17,7 @@ def reference_exists(ref):
             repo = all_args['self'].git_repo.repo
             git.repo.fun.name_to_object(repo, all_args[ref])
         except git.exc.BadName as ex:
-            msg = "Could not find %s %s." % (ref, all_args[ref])
+            msg = f"Could not find {ref} {all_args[ref]}."
             raise exceptions.ReferenceNotFoundException(msg) from ex
         return func(*args, **kwargs)
     return wrapper

@@ -61,9 +61,10 @@ class GitCommit(object):
             return False
 
         # Commit the changes
-        self.logger.debug("Preparing to commit changes to the following files: %s", changes)
+        msg = f"Preparing to commit changes to the following files: {changes}"
+        self.logger.debug(msg)
         commit = self.git_repo.git.commit(message=message, all=True, signoff=signoff)
-        self.logger.info("Committed changes as commit %s", commit)
+        self.logger.info(f"Committed changes as commit {commit}")
 
     @reference_exists('hash_')
     def revert(self, hash_, message=None):
@@ -134,7 +135,8 @@ class GitCommit(object):
                    f"Error: {ex}")
             raise exceptions.ChangeNotAppliedException(msg) from ex
 
-        self.logger.debug("Successfully cherry-picked commit %s on %s", sha, branch_name)
+        msg = f"Successfully cherry-picked commit {sha} on {branch_name}"
+        self.logger.debug(msg)
 
     def abort_cherrypick(self):
         """Aborts a cherrypick."""

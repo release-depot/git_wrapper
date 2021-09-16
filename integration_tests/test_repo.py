@@ -27,7 +27,7 @@ def test_clone(clone_repo_root, clone_repo_url):
 
 def test_clone_from_filesystem(clone_repo_root, clone_repo_url, repo_root):
     new_repo_root = clone_repo_root
-    repo_url = "file://%s" % repo_root
+    repo_url = f"file://{repo_root}"
 
     # Create a new clone
     clone = GitRepo.clone(repo_url, new_repo_root)
