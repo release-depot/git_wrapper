@@ -18,7 +18,7 @@ class GitLog(object):
         self.git_repo = git_repo
         self.logger = logger
 
-    def commit_format(self, commits, pattern='$full_message'):
+    def _commit_format(self, commits, pattern='$full_message'):
         """Return a list of strings representing the commits
 
            Any of the following placeholders may be used in the pattern:
@@ -31,7 +31,7 @@ class GitLog(object):
              * $author Commit author
              * $date Date the commit was authored
 
-           :param list commits: A list of commits
+           :param list commits: A list of git.objects.object.Commit commits
            :param str pattern: Formatter containing any of the placeholders above
            :return: list of strings
         """
@@ -87,7 +87,7 @@ class GitLog(object):
         if not commits:
             return []
 
-        return self.commit_format(commits, pattern)
+        return self._commit_format(commits, pattern)
 
     def short_log_diff(self, hash_from, hash_to):
         """Return a list of strings for log entries between two hashes.
@@ -148,4 +148,4 @@ class GitLog(object):
            :return: A string
         """
         result = self.git_repo.repo.commit(commit_ref)
-        return self.commit_format([result], pattern)[0]
+        return self._commit_format([result], pattern)[0]
