@@ -1,4 +1,0 @@
-Welcome
-=======
-
-.. include:: ../README.rst

@@ -5,7 +5,7 @@ Welcome to git_wrapper's documentation!
    :maxdepth: 2
    :caption: Contents:
 
-   readme
+   readme.md
    installation
    usage
    modules
