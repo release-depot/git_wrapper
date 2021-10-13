@@ -11,7 +11,7 @@ Welcome to git_wrapper's documentation!
    modules
    contributing
    authors
-   history
+   changelog.md
 
 Indices and tables
 ==================
