@@ -106,5 +106,5 @@ ENV/
 Pipfile.lock
 
 # auto-generated
-ChangeLog
+CHANGELOG.md
 AUTHORS
