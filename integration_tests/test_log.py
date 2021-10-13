@@ -55,7 +55,8 @@ def test_log_grep_empty(repo_root):
 def test_log_grep_with_path(repo_root):
     repo = GitRepo(repo_root)
 
-    commits = repo.log.grep_for_commits('master', "Initial", path=".gitignore")
+    commits = repo.log.grep_for_commits('master', "structure",
+                                        path=".gitignore")
 
     assert len(commits) == 1
 
