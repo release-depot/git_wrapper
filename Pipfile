@@ -7,5 +7,5 @@ name = "pypi"
 git-wrapper = {path = ".", editable = true}
 
 [dev-packages]
-git-wrapper = {path = ".", extras = ["test","docs","dist"], editable = true}
+git-wrapper = {path = ".", extras = ["devbase","test","docs","dist"], editable = true}
 
