@@ -1,16 +1,32 @@
+---
+
+queue_rules:
+  - name: default
+    conditions:
+      # Conditions to get out of the queue (= merged)
+      - check-success=flake8
+      - check-success=integration
+      - check-success=test (3.6)
+      - check-success=test (3.7)
+      - check-success=test (3.8)
+      - check-success=test (3.9)
+
 pull_request_rules:
-    - actions:
-        merge:
-            method: rebase
-            rebase_fallback: merge
-            strict: true
-      conditions:
-          - label!=(no-mergify|WIP)
-          - '#approved-reviews-by>=2'
-          - check-success=flake8
-          - check-success=integration
-          - check-success=test (3.6)
-          - check-success=test (3.7)
-          - check-success=test (3.8)
-          - check-success=test (3.9)
-      name: default
+  - name: automatic merge
+    conditions:
+      - label!=(no-mergify|WIP)
+      - '#approved-reviews-by>=2'
+      # We have to duplicate these because mergify won't allow us to use an
+      # anchor
+      - check-success=flake8
+      - check-success=integration
+      - check-success=test (3.6)
+      - check-success=test (3.7)
+      - check-success=test (3.8)
+      - check-success=test (3.9)
+    actions:
+      queue:
+        method: rebase
+        rebase_fallback: merge
+        update_method: rebase
+        name: default
