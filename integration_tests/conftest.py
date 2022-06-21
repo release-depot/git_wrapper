@@ -26,6 +26,10 @@ def repo_root():
     repo.heads.master.checkout()
     repo.head.reset(origin.refs.master, index=True, working_tree=True)
 
+    for t in repo.tags:
+        if "test" in t.name:
+            repo.git.tag("--delete", t.name)
+
     # Remove extra local branches
     for b in repo.branches:
         if b.name != 'master':

@@ -101,8 +101,67 @@ def test_fetch(mock_repo):
 
     repo = GitRepo(repo=mock_repo)
     repo.remote.fetch()
-    assert mock_repo.remote.called is True
-    assert mock_remote.fetch.called is True
+
+    mock_repo.remote.assert_called()
+    mock_remote.fetch.assert_called()
+    mock_remote.fetch.assert_called_with(prune=False, prune_tags=False)
+
+
+def test_fetch_prune(mock_repo):
+    """
+    GIVEN GitRepo is initialized with a path and repo
+    WHEN remote.fetch is called
+    AND prune is True
+    THEN repo.remote is called
+    AND fetch is called with prune
+    """
+    mock_remote = Mock()
+    mock_repo.remote.return_value = mock_remote
+
+    repo = GitRepo(repo=mock_repo)
+    repo.remote.fetch(prune=True)
+
+    mock_repo.remote.assert_called()
+    mock_remote.fetch.assert_called()
+    mock_remote.fetch.assert_called_with(prune=True, prune_tags=False)
+
+
+def test_fetch_prune_tags(mock_repo):
+    """
+    GIVEN GitRepo is initialized with a path and repo
+    WHEN remote.fetch is called
+    AND prune and prune_tags are True
+    THEN repo.remote is called
+    AND fetch is called with prune and prune_tags
+    """
+    mock_remote = Mock()
+    mock_repo.remote.return_value = mock_remote
+
+    repo = GitRepo(repo=mock_repo)
+    repo.remote.fetch(prune=True, prune_tags=True)
+
+    mock_repo.remote.assert_called()
+    mock_remote.fetch.assert_called()
+    mock_remote.fetch.assert_called_with(prune=True, prune_tags=True)
+
+
+def test_fetch_no_prune(mock_repo):
+    """
+    GIVEN GitRepo is initialized with a path and repo
+    WHEN remote.fetch is called
+    AND prune_tags is True but prune is False
+    THEN repo.remote is called
+    AND fetch is called without prune and prune_tags
+    """
+    mock_remote = Mock()
+    mock_repo.remote.return_value = mock_remote
+
+    repo = GitRepo(repo=mock_repo)
+    repo.remote.fetch(prune=False, prune_tags=True)
+
+    mock_repo.remote.assert_called()
+    mock_remote.fetch.assert_called()
+    mock_remote.fetch.assert_called_with()
 
 
 def test_fetch_remote_doesnt_exist(mock_repo):
@@ -151,8 +210,55 @@ def test_fetch_all(mock_repo):
     repo.remote.names = Mock(return_value=["origin", "otherremote"])
 
     repo.remote.fetch_all()
-    assert mock_remoteA.fetch.called is True
-    assert mock_remoteB.fetch.called is True
+
+    mock_remoteA.fetch.assert_called()
+    mock_remoteB.fetch.assert_called()
+
+
+def test_fetch_all_prune(mock_repo):
+    """
+    GIVEN GitRepo is initialized with a path and repo
+    WHEN remote.fetch_all is called
+    AND there are 2 remotes
+    AND prune is True
+    THEN fetch is called twice with prune
+    """
+    mock_remoteA, mock_remoteB = Mock(), Mock()
+    mock_remotes = {"origin": mock_remoteA, "otherremote": mock_remoteB}
+    mock_repo.remote = lambda r: mock_remotes[r]
+
+    repo = GitRepo(repo=mock_repo)
+    repo.remote.names = Mock(return_value=["origin", "otherremote"])
+
+    repo.remote.fetch_all(prune=True)
+
+    mock_remoteA.fetch.assert_called()
+    mock_remoteB.fetch.assert_called()
+    mock_remoteA.fetch.assert_called_with(prune=True, prune_tags=False)
+    mock_remoteB.fetch.assert_called_with(prune=True, prune_tags=False)
+
+
+def test_fetch_all_prune_tags(mock_repo):
+    """
+    GIVEN GitRepo is initialized with a path and repo
+    WHEN remote.fetch_all is called
+    AND there are 2 remotes
+    AND prune and prune_tags are True
+    THEN fetch is called twice with prune and prune_tags
+    """
+    mock_remoteA, mock_remoteB = Mock(), Mock()
+    mock_remotes = {"origin": mock_remoteA, "otherremote": mock_remoteB}
+    mock_repo.remote = lambda r: mock_remotes[r]
+
+    repo = GitRepo(repo=mock_repo)
+    repo.remote.names = Mock(return_value=["origin", "otherremote"])
+
+    repo.remote.fetch_all(prune=True, prune_tags=True)
+
+    mock_remoteA.fetch.assert_called()
+    mock_remoteB.fetch.assert_called()
+    mock_remoteA.fetch.assert_called_with(prune=True, prune_tags=True)
+    mock_remoteB.fetch.assert_called_with(prune=True, prune_tags=True)
 
 
 def test_fetch_all_with_errors(mock_repo):
@@ -177,6 +283,7 @@ def test_fetch_all_with_errors(mock_repo):
         repo.remote.fetch_all()
 
     assert 'origin' in str(exc_info.value)
-    assert mock_remoteA.fetch.called is True
-    assert mock_remoteB.fetch.called is True
-    assert mock_remoteC.fetch.called is True
+
+    mock_remoteA.fetch.assert_called()
+    mock_remoteB.fetch.assert_called()
+    mock_remoteC.fetch.assert_called()
