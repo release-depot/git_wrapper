@@ -52,10 +52,18 @@ class GitRemote(object):
 
         return ret_status
 
-    def fetch(self, remote="origin"):
-        """Refresh the specified remote
+    def fetch(self, remote="origin", prune=False, prune_tags=False):
+        """Refresh the specified remote.
+
+           Optionally, specify prune to be True to allow
+           for the removal of local branches that don't
+           exist on the remote. If you also wish to remove
+           local tags that don't exist on the remote, specify
+           prune_tags to be True.
 
            :param str remote: Remote to fetch
+           :param bool prune: True if you want to prune
+           :param bool prune_tags: True if you want to prune local tags (only works if prune is True)
         """
         try:
             remote = self.git_repo.repo.remote(remote)
@@ -65,24 +73,37 @@ class GitRemote(object):
             raise exceptions.ReferenceNotFoundException(msg)
 
         try:
-            remote.fetch()
+            if prune_tags and not prune:
+                self.logger.info("prune_tags was ignored because prune is False")
+                remote.fetch()
+            else:
+                remote.fetch(prune=prune, prune_tags=prune_tags)
         except git.GitCommandError as ex:
             msg = (f"Could not fetch remote {remote.name} ({remote.url}). "
                    f"Error: {ex}")
             raise exceptions.RemoteException(msg) from ex
 
-    def fetch_all(self):
+    def fetch_all(self, prune=False, prune_tags=False):
         """Refresh all the repo's remotes.
 
            All the remotes will be fetched even if one fails ; in this case a
            single exception containing the list of failed remotes is returned.
+
+           Optionally, specify prune to be True to allow
+           for the removal of local branches that don't
+           exist on the remotes. If you also wish to remove
+           local tags that don't exist on the remotes, specify
+           prune_tags to be True.
+
+           :param bool prune: True if you want to prune
+           :param bool prune_tags: True if you want to prune local tags (only works if prune is True)
         """
         remotes = self.names()
 
         errors = []
         for remote in remotes:
             try:
-                self.fetch(remote)
+                self.fetch(remote, prune, prune_tags)
             except exceptions.RemoteException:
                 self.logger.exception(f"Error fetching remote {remote}")
                 errors.append(remote)
