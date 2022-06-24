@@ -77,10 +77,11 @@ Ready to contribute? Here's how to set up `git_wrapper` for local development.
    Now you can make your changes locally.
 
 5. When you're done making changes, check that your changes pass flake8 and the
-   tests, including testing other Python versions with tox::
+   tests, including testing other Python versions with tox, and running integration tests::
 
     $ make lint
     $ make test
+    $ tox -e integration_podman
     $ tox
 
 
