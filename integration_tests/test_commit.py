@@ -79,3 +79,23 @@ def test_cherrypick_failed(repo_root):
     repo.commit.abort_cherrypick()
     message = repo.repo.head.object.message
     assert "Adding a wrapper" in message
+
+
+def test_to_hexsha(repo_root):
+    repo = GitRepo(repo_root)
+
+    # Get commit hexsha from tag
+    hexsha = "631b3a35723a038c01669e1933571693a166db81"
+    assert repo.commit.to_hexsha("0.0.1") == hexsha
+
+    # Get commit hexsha from branch name
+    hexsha = repo.repo.head.commit.hexsha
+    assert repo.commit.to_hexsha("master") == hexsha
+
+    # Get full commit hexsha from abbreviated commit
+    hexsha = "2e6c014bc296be90a7ed04d155ea7d9da2240bbc"
+    assert repo.commit.to_hexsha("2e6c014") == hexsha
+
+    # Raise exception for invalid references
+    with pytest.raises(exceptions.ReferenceNotFoundException):
+        repo.commit.to_hexsha("doesntExist")

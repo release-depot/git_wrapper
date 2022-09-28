@@ -1,6 +1,7 @@
 #! /usr/bin/env python
 """Tests for GitCommit"""
 
+from collections import namedtuple
 from mock import Mock, patch
 
 import git
@@ -350,3 +351,33 @@ def test_abort_cherrypick_error(mock_repo):
 
     with pytest.raises(exceptions.AbortException):
         repo.commit.abort_cherrypick()
+
+
+def test_to_hexsha(mock_repo):
+    """
+    GIVEN GitRepo initialized with a path and repo
+    WHEN commit.to_hexsha is called with a valid ref
+    THEN a hexsha is returned
+    """
+    repo = GitRepo('./', mock_repo)
+
+    Commit = namedtuple('Commit', ['hexsha'])
+    test_commit = Commit("abc1234")
+
+    with patch('git.repo.fun.name_to_object') as mock_name_to_object:
+        mock_name_to_object.return_value = test_commit
+        assert repo.commit.to_hexsha('my_ref') == "abc1234"
+
+
+def test_to_hexsha_with_invalid_ref(mock_repo):
+    """
+    GIVEN GitRepo initialized with a path and repo
+    WHEN commit.to_hexsha is called with an invalid reference
+    THEN a ReferenceNotFoundException is raised
+    """
+    repo = GitRepo('./', mock_repo)
+
+    with patch('git.repo.fun.name_to_object') as mock_name_to_object:
+        mock_name_to_object.side_effect = git.exc.BadName()
+        with pytest.raises(exceptions.ReferenceNotFoundException):
+            repo.commit.to_hexsha('bad_ref')
