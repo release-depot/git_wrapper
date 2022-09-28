@@ -145,3 +145,12 @@ class GitCommit(object):
         except git.GitCommandError as ex:
             msg = f"Cherrypick abort command failed. Error: {ex}"
             raise exceptions.AbortException(msg) from ex
+
+    @reference_exists('ref')
+    def to_hexsha(self, ref):
+        """Return the commit hex sha for a given commit reference
+
+           :param str ref: The tag, branch, etc referring to a commit
+           :return str: The commit's hex sha for the given reference
+        """
+        return git.repo.fun.name_to_object(self.git_repo.repo, ref).hexsha
