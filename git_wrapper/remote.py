@@ -24,6 +24,14 @@ class GitRemote(object):
         """
         return [x.name for x in self.git_repo.repo.remotes]
 
+    def names_url_dict(self):
+        """Returns a dict of remotes for a given repo with its url
+
+            :return dict: A dict of utf-8 encoded remote names with
+                          url as its value
+        """
+        return {x.name: x.url for x in self.git_repo.repo.remotes}
+
     def add(self, name, url):
         """Adds a remote to the given repo
 
@@ -111,3 +119,28 @@ class GitRemote(object):
         if errors:
             msg = f"Error fetching these remotes: {', '.join(errors)}"
             raise exceptions.RemoteException(msg)
+
+    def remove(self, name):
+        """Remove the specified remote from the given repo
+
+           :param str name: Remote name to remove
+           :return bool: True if the remote was removed, False otherwise
+        """
+        working_dir = self.git_repo.repo.working_dir
+        self.logger.debug(f"Removing remote {name} from repo {working_dir}")
+        ret_status = False
+
+        try:
+            remote = self.git_repo.repo.remote(name)
+        except ValueError:
+            repo = self.git_repo.repo.working_dir
+            msg = f"Remote {name} does not exist on repo {repo}"
+            raise exceptions.ReferenceNotFoundException(msg)
+
+        try:
+            self.git_repo.repo.delete_remote(remote)
+            ret_status = True
+        except git.CommandError:
+            return ret_status
+
+        return ret_status
