@@ -1,6 +1,7 @@
 #! /usr/bin/env python
 """Tests for GitRemote"""
 
+from dataclasses import dataclass
 from mock import Mock
 
 import git
@@ -10,14 +11,29 @@ from git_wrapper import exceptions
 from git_wrapper.repo import GitRepo
 
 
+@dataclass
+class RemoteNames:
+    name: str
+
+
+@dataclass
+class RemoteNamesUrl(RemoteNames):
+    url: str
+
+
 def remote_generator(names):
     """Generates objects to be used with git.Repo.remotes call"""
     ret_data = []
     for name in names:
-        obj = type('', (), {})()
-        obj.name = name
-        ret_data.append(obj)
+        ret_data.append(RemoteNames(name))
+    return ret_data
 
+
+def remote_generator_url(remotes):
+    """Generates objects to be used with git.Repo.remotes call"""
+    ret_data = []
+    for name, url in remotes.items():
+        ret_data.append(RemoteNamesUrl(name, url))
     return ret_data
 
 
@@ -34,6 +50,21 @@ def test_get_remotes_returns_list(mock_repo):
     git_util = GitRepo('./', mock_repo)
 
     assert expected == git_util.remote.names()
+
+
+def test_get_remotes_returns_dict(mock_repo):
+    """
+    GIVEN GitRepo is initialized with a path and repo
+    WHEN remote.names_url_dict is called
+    THEN a dict of remote names with its url is returned
+    """
+    expected = {'a': 1, 'b': 2, 'c': 3}
+    attrs = {'remotes': remote_generator_url(expected)}
+    mock_repo.configure_mock(**attrs)
+
+    git_util = GitRepo('./', mock_repo)
+
+    assert expected == git_util.remote.names_url_dict()
 
 
 def test_add_remote_adds(mock_repo):
@@ -87,6 +118,46 @@ def test_add_remote_update_fails(mock_repo):
     assert git_util.remote.add('rdo', 'http://rdoproject.org') is False
     assert update_mock.called is True
     delete_mock.assert_called_once_with(remote_mock)
+
+
+def test_remove_remote_removes(mock_repo):
+    """
+    GIVEN GitRepo initialized with a path and repo
+    WHEN remote.remove is called with a name and url
+    THEN a TRUE status is returned
+    """
+    git_util = GitRepo('./', mock_repo)
+
+    assert git_util.remote.remove('origin') is True
+
+
+def test_remove_remote_remote_fails(mock_repo):
+    """
+    GIVEN GitRepo initialized with a path and repo
+    WHEN remote.remove is called with a name and url
+    AND the repo.remote fails with an exception
+    THEN a ReferenceNotFoundException is raised
+    """
+    mock_repo.remote.side_effect = ValueError
+
+    repo = GitRepo(repo=mock_repo)
+    with pytest.raises(exceptions.ReferenceNotFoundException):
+        repo.remote.remove("doesntExist")
+
+    mock_repo.remote.assert_called_with("doesntExist")
+
+
+def test_remove_remote_remove_fails(mock_repo):
+    """
+    GIVEN GitRepo initialized with a path and repo
+    WHEN remote.remove is called with a name and url
+    AND the repo.delete_remote fails with an exception
+    THEN a False status is returned
+    """
+    mock_repo.delete_remote.side_effect = git.CommandError('remove')
+    git_util = GitRepo('./', mock_repo)
+
+    assert git_util.remote.remove('rdo') is False
 
 
 def test_fetch(mock_repo):
